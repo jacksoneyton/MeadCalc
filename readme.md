@@ -16,7 +16,7 @@ You can deploy MeadCalc directly to your Proxmox server with a single command â€
 Run this on your **Proxmox host**:
 
 ```bash
-bash -c "$(curl -fsSL https://raw.githubusercontent.com/jacksoneyton/MeadCalc/main/meadcalc.sh)"
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/jacksoneyton/MeadCalc/master/meadcalc.sh)"
 ```
 
 > **Note:**  
