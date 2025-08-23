@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 source <(curl -s https://raw.githubusercontent.com/community-scripts/ProxmoxVE/main/misc/build.func)
-# Copyright (c) 2021-2024 Your Name
-# Author: Your Name (your.email@example.com)
+# Copyright (c) 2021-2024 Jackson Eyton
+# Author: Jackson Eyton (jackson.eyton@gmail.com)
 # License: MIT
 # https://github.com/jacksoneyton/MeadCalc
 
@@ -66,10 +66,10 @@ cp -r /var/www/meadcalc /var/www/meadcalc.backup.$(date +%Y%m%d_%H%M%S)
 
 # Download latest files from your repo
 cd /tmp
-wget -q https://raw.githubusercontent.com/jacksoneyton/MeadCalc/main/index.html -O index.html
-wget -q https://raw.githubusercontent.com/jacksoneyton/MeadCalc/main/styles.css -O styles.css  
-wget -q https://raw.githubusercontent.com/jacksoneyton/MeadCalc/main/calculator.js -O calculator.js
-wget -q https://raw.githubusercontent.com/jacksoneyton/MeadCalc/main/MeadCalc_logo.png -O MeadCalc_logo.png 2>/dev/null || true
+wget -q https://raw.githubusercontent.com/jacksoneyton/MeadCalc/master/index.html -O index.html
+wget -q https://raw.githubusercontent.com/jacksoneyton/MeadCalc/master/styles.css -O styles.css  
+wget -q https://raw.githubusercontent.com/jacksoneyton/MeadCalc/master/calculator.js -O calculator.js
+wget -q https://raw.githubusercontent.com/jacksoneyton/MeadCalc/master/MeadCalc_logo.png -O MeadCalc_logo.png 2>/dev/null || true
 
 # Copy to web directory
 cp index.html styles.css calculator.js /var/www/meadcalc/
@@ -111,10 +111,10 @@ function install_app() {
   cd /tmp
 
   # Download application files from your GitHub repo
-  wget -q https://raw.githubusercontent.com/jacksoneyton/MeadCalc/main/index.html -O index.html
-  wget -q https://raw.githubusercontent.com/jacksoneyton/MeadCalc/main/styles.css -O styles.css
-  wget -q https://raw.githubusercontent.com/jacksoneyton/MeadCalc/main/calculator.js -O calculator.js
-  wget -q https://raw.githubusercontent.com/jacksoneyton/MeadCalc/main/MeadCalc_logo.png -O MeadCalc_logo.png 2>/dev/null || echo "Logo not found, continuing..."
+  wget -q https://raw.githubusercontent.com/jacksoneyton/MeadCalc/master/index.html -O index.html
+  wget -q https://raw.githubusercontent.com/jacksoneyton/MeadCalc/master/styles.css -O styles.css
+  wget -q https://raw.githubusercontent.com/jacksoneyton/MeadCalc/master/calculator.js -O calculator.js
+  wget -q https://raw.githubusercontent.com/jacksoneyton/MeadCalc/master/MeadCalc_logo.png -O MeadCalc_logo.png 2>/dev/null || echo "Logo not found, continuing..."
 
   # Copy files to web directory
   cp index.html styles.css calculator.js /var/www/meadcalc/
@@ -210,10 +210,10 @@ cp -r /var/www/meadcalc /var/www/meadcalc.backup.$(date +%Y%m%d_%H%M%S)
 
 echo "Downloading latest version..."
 cd /tmp
-wget -q https://raw.githubusercontent.com/jacksoneyton/MeadCalc/main/index.html -O index.html
-wget -q https://raw.githubusercontent.com/jacksoneyton/MeadCalc/main/styles.css -O styles.css
-wget -q https://raw.githubusercontent.com/jacksoneyton/MeadCalc/main/calculator.js -O calculator.js
-wget -q https://raw.githubusercontent.com/jacksoneyton/MeadCalc/main/MeadCalc_logo.png -O MeadCalc_logo.png 2>/dev/null || true
+wget -q https://raw.githubusercontent.com/jacksoneyton/MeadCalc/master/index.html -O index.html
+wget -q https://raw.githubusercontent.com/jacksoneyton/MeadCalc/master/styles.css -O styles.css
+wget -q https://raw.githubusercontent.com/jacksoneyton/MeadCalc/master/calculator.js -O calculator.js
+wget -q https://raw.githubusercontent.com/jacksoneyton/MeadCalc/master/MeadCalc_logo.png -O MeadCalc_logo.png 2>/dev/null || true
 
 echo "Installing updates..."
 cp index.html styles.css calculator.js /var/www/meadcalc/
