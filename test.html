@@ -58,6 +58,34 @@
             // Test 7: Metric kg/g conversion  
             results.push(`Metric Test: 2 kg 500 g = ${(2 + 500/1000).toFixed(3)} kg total`);
             
+            // Test 8: Imperial overflow logic
+            results.push(`Imperial Overflow Test 1: 20 oz should become 1 lb 4 oz = ${Math.floor(20/16)} lb + ${20%16} oz`);
+            results.push(`Imperial Overflow Test 2: 33.5 oz should become 2 lb 1.5 oz = ${Math.floor(33.5/16)} lb + ${(33.5%16).toFixed(1)} oz`);
+            
+            // Test 9: Metric overflow logic
+            results.push(`Metric Overflow Test 1: 1200 g should become 1 kg 200 g = ${Math.floor(1200/1000)} kg + ${1200%1000} g`);
+            results.push(`Metric Overflow Test 2: 2750 g should become 2 kg 750 g = ${Math.floor(2750/1000)} kg + ${2750%1000} g`);
+            
+            // Test 10: Step increment validation
+            results.push(`Step Test: Imperial main inputs should step by 1 (whole lbs/kg), sub inputs by 0.1 (oz) or 10 (g)`);
+            results.push(`Step Test: When imperial oz >= 16, should increment lbs. When metric g >= 1000, should increment kg`);
+            
+            // Test 11: Real-time calculation verification
+            results.push(`Real-time Test: Calculations should update automatically when any input changes`);
+            results.push(`Real-time Test: ABV section responds to OG/FG changes immediately`);
+            results.push(`Real-time Test: SG section responds to batch size, honey, fruit changes immediately`);
+            results.push(`Real-time Test: Target ABV section responds to target ABV, batch size, percentage changes immediately`);
+            results.push(`UI Test: No calculation buttons needed - all calculations are automatic`);
+            
+            // Test 12: Honey calculation verification
+            const targetABV = 6;
+            const requiredOG = 1.000 + (targetABV / 131.25);
+            const gravityPoints = (requiredOG - 1.000) * 1000;
+            const totalSugarNeeded = (gravityPoints * 1) / 46; // 1 gallon
+            const honeyNeeded = totalSugarNeeded / 0.80;
+            results.push(`Honey Math Check: 6% ABV needs OG ${requiredOG.toFixed(3)} = ${totalSugarNeeded.toFixed(2)} lbs sugar = ${honeyNeeded.toFixed(2)} lbs honey`);
+            results.push(`Honey Verification: ${totalSugarNeeded.toFixed(2)} lbs sugar ÷ 0.80 = ${honeyNeeded.toFixed(2)} lbs honey needed ✓`);
+            
             document.getElementById('test-results').innerHTML = 
                 '<h2>Test Results:</h2><ul>' + 
                 results.map(result => `<li>${result}</li>`).join('') + 

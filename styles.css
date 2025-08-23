@@ -99,6 +99,119 @@ header p {
     margin-top: 5px;
 }
 
+/* Dynamic Ingredients Styling */
+.ingredients-section {
+    margin: 20px 0;
+}
+
+.ingredients-section h3 {
+    color: #4a5568;
+    margin-bottom: 15px;
+    font-size: 1.2rem;
+}
+
+.ingredient-item {
+    margin-bottom: 12px;
+    padding: 12px;
+    background: #f7fafc;
+    border-radius: 8px;
+    border-left: 4px solid #667eea;
+}
+
+.ingredient-controls-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.ingredient-type {
+    flex: 2;
+    padding: 8px 12px;
+    border: 2px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.ingredient-percentage {
+    width: 80px;
+    padding: 8px 12px;
+    border: 2px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 14px;
+    text-align: center;
+}
+
+.percentage-symbol {
+    color: #4a5568;
+    font-weight: 600;
+}
+
+.ingredient-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.add-btn {
+    background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.add-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(72, 187, 120, 0.3);
+}
+
+.remove-btn {
+    background: #f56565;
+    color: white;
+    border: none;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.remove-btn:hover {
+    background: #e53e3e;
+    transform: scale(1.1);
+}
+
+.total-percentage {
+    font-weight: 600;
+    font-size: 16px;
+}
+
+.total-percentage .at-limit {
+    color: #38a169;
+}
+
+.total-percentage .over-limit {
+    color: #f56565;
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
 .calculator-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
@@ -163,28 +276,7 @@ header p {
     display: block;
 }
 
-button {
-    width: 100%;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 15px 20px;
-    border: none;
-    border-radius: 8px;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    margin-top: 10px;
-}
-
-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
-}
-
-button:active {
-    transform: translateY(0);
-}
+/* Button styles removed - calculations now happen in real-time */
 
 .result {
     margin-top: 20px;
@@ -216,6 +308,16 @@ button:active {
     border-radius: 8px;
     margin-top: 10px;
     box-shadow: 0 4px 15px rgba(237, 137, 54, 0.2);
+}
+
+.info {
+    background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+    color: white;
+    padding: 15px 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(66, 153, 225, 0.2);
+    opacity: 0.8;
+    font-style: italic;
 }
 
 .result h3 {

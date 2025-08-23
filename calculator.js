@@ -42,6 +42,10 @@ const LITERS_TO_GALLONS = 0.264172;
 let currentWeightUnit = 'imperial'; // 'imperial' or 'metric'
 let currentVolumeUnit = 'imperial'; // 'imperial' or 'metric'
 
+// Dynamic ingredients management
+let targetIngredients = [];
+let ingredientCounter = 0;
+
 // Unit conversion functions
 function convertWeightToLbs(amount, unit = currentWeightUnit) {
     if (unit === 'metric') {
@@ -139,23 +143,33 @@ function updateVolumeLabels() {
 }
 
 function updateWeightInputs() {
+    const honeyAmount = document.getElementById('honey-amount');
     const honeyOz = document.getElementById('honey-oz');
+    const fruitAmount = document.getElementById('fruit-amount');
     const fruitOz = document.getElementById('fruit-oz');
     
     if (currentWeightUnit === 'imperial') {
-        // Show oz inputs
+        // Configure for imperial (lbs/oz)
+        honeyAmount.step = '1';
+        fruitAmount.step = '1';
         honeyOz.style.display = 'inline-block';
         fruitOz.style.display = 'inline-block';
         honeyOz.placeholder = 'oz';
         fruitOz.placeholder = 'oz';
-        honeyOz.max = '15';
-        fruitOz.max = '15';
+        honeyOz.step = '0.1';
+        fruitOz.step = '0.1';
+        honeyOz.max = '15.9';
+        fruitOz.max = '15.9';
     } else {
-        // Show gram inputs
+        // Configure for metric (kg/g)
+        honeyAmount.step = '1';
+        fruitAmount.step = '1';
         honeyOz.style.display = 'inline-block';
         fruitOz.style.display = 'inline-block';
         honeyOz.placeholder = 'g';
         fruitOz.placeholder = 'g';
+        honeyOz.step = '10';
+        fruitOz.step = '10';
         honeyOz.max = '999';
         fruitOz.max = '999';
     }
@@ -189,13 +203,198 @@ function updateConversionDisplay(elementId, weightInLbs) {
     element.textContent = conversionText;
 }
 
+// Dynamic ingredient management functions
+function addIngredient() {
+    const id = `ingredient-${ingredientCounter++}`;
+    const ingredient = {
+        id: id,
+        type: 'honey',
+        percentage: 0
+    };
+    
+    targetIngredients.push(ingredient);
+    renderIngredient(ingredient);
+    updateTotalPercentage();
+    calculateIngredientsRealTime();
+}
+
+function removeIngredient(id) {
+    targetIngredients = targetIngredients.filter(ing => ing.id !== id);
+    document.getElementById(id).remove();
+    updateTotalPercentage();
+    calculateIngredientsRealTime();
+}
+
+function renderIngredient(ingredient) {
+    const container = document.getElementById('ingredients-list');
+    const div = document.createElement('div');
+    div.className = 'ingredient-item';
+    div.id = ingredient.id;
+    
+    const ingredientOptions = Object.keys(ingredients).map(key => 
+        `<option value="${key}">${ingredients[key].name}</option>`
+    ).join('');
+    
+    div.innerHTML = `
+        <div class="ingredient-controls-row">
+            <select class="ingredient-type" onchange="updateIngredient('${ingredient.id}', 'type', this.value)">
+                <option value="honey">Honey</option>
+                ${ingredientOptions}
+            </select>
+            <input type="number" class="ingredient-percentage" 
+                   value="${ingredient.percentage}" 
+                   min="0" max="100" step="1"
+                   onchange="updateIngredient('${ingredient.id}', 'percentage', this.value)"
+                   oninput="updateIngredient('${ingredient.id}', 'percentage', this.value)">
+            <span class="percentage-symbol">%</span>
+            <button type="button" class="remove-btn" onclick="removeIngredient('${ingredient.id}')">&times;</button>
+        </div>
+    `;
+    
+    container.appendChild(div);
+}
+
+function updateIngredient(id, property, value) {
+    const ingredient = targetIngredients.find(ing => ing.id === id);
+    if (ingredient) {
+        if (property === 'percentage') {
+            const newValue = parseFloat(value) || 0;
+            const maxAllowed = getMaxAllowedPercentage(id);
+            ingredient[property] = Math.min(newValue, maxAllowed);
+            
+            // Update input value if it was clamped
+            const input = document.querySelector(`#${id} .ingredient-percentage`);
+            if (input.value !== ingredient[property].toString()) {
+                input.value = ingredient[property];
+            }
+        } else {
+            ingredient[property] = value;
+        }
+        
+        updateTotalPercentage();
+        calculateIngredientsRealTime();
+    }
+}
+
+function getMaxAllowedPercentage(excludeId) {
+    const currentTotal = targetIngredients
+        .filter(ing => ing.id !== excludeId)
+        .reduce((sum, ing) => sum + ing.percentage, 0);
+    return Math.max(0, 100 - currentTotal);
+}
+
+function updateTotalPercentage() {
+    const total = targetIngredients.reduce((sum, ing) => sum + ing.percentage, 0);
+    const totalElement = document.getElementById('total-percentage');
+    totalElement.textContent = total.toFixed(0);
+    
+    // Update styling based on total
+    if (total > 100) {
+        totalElement.className = 'over-limit';
+    } else if (total === 100) {
+        totalElement.className = 'at-limit';
+    } else {
+        totalElement.className = '';
+    }
+}
+
+function initializeDefaultIngredient() {
+    // Add honey as default ingredient at 100%
+    targetIngredients = [];
+    ingredientCounter = 0;
+    
+    const honeyIngredient = {
+        id: `ingredient-${ingredientCounter++}`,
+        type: 'honey',
+        percentage: 100
+    };
+    
+    targetIngredients.push(honeyIngredient);
+    
+    // Clear and re-render
+    const container = document.getElementById('ingredients-list');
+    container.innerHTML = '';
+    renderIngredient(honeyIngredient);
+    updateTotalPercentage();
+}
+
+// Handle overflow for imperial units (oz > 15.9 -> increment lbs)
+function handleImperialOverflow(baseId) {
+    const mainInput = document.getElementById(baseId);
+    const ozInput = document.getElementById(baseId.replace('-amount', '-oz'));
+    
+    let oz = parseFloat(ozInput.value) || 0;
+    let lbs = parseFloat(mainInput.value) || 0;
+    
+    if (oz >= 16) {
+        const extraLbs = Math.floor(oz / 16);
+        lbs += extraLbs;
+        oz = oz % 16;
+        
+        mainInput.value = lbs;
+        ozInput.value = oz.toFixed(1);
+        return true; // Overflow occurred
+    }
+    return false; // No overflow
+}
+
+// Handle overflow for metric units (g > 999 -> increment kg)
+function handleMetricOverflow(baseId) {
+    const mainInput = document.getElementById(baseId);
+    const gramInput = document.getElementById(baseId.replace('-amount', '-oz'));
+    
+    let grams = parseFloat(gramInput.value) || 0;
+    let kg = parseFloat(mainInput.value) || 0;
+    
+    if (grams >= 1000) {
+        const extraKg = Math.floor(grams / 1000);
+        kg += extraKg;
+        grams = grams % 1000;
+        
+        mainInput.value = kg;
+        gramInput.value = Math.round(grams / 10) * 10; // Round to nearest 10g
+        return true; // Overflow occurred
+    }
+    return false; // No overflow
+}
+
+// Handle weight input changes with overflow logic
+function handleWeightInputChange(event) {
+    const inputId = event.target.id;
+    const isSubUnit = inputId.includes('-oz');
+    
+    if (isSubUnit) {
+        // Handle overflow from oz/g to lbs/kg
+        const baseId = inputId.replace('-oz', '-amount');
+        let overflowOccurred = false;
+        
+        if (currentWeightUnit === 'imperial') {
+            overflowOccurred = handleImperialOverflow(baseId);
+        } else {
+            overflowOccurred = handleMetricOverflow(baseId);
+        }
+        
+        // Update conversions after overflow handling
+        if (overflowOccurred) {
+            setTimeout(() => {
+                updateConversions();
+                calculateSGRealTime(); // Trigger SG calculation after overflow
+            }, 50); // Small delay to ensure DOM updates
+        }
+    }
+    
+    // Always update conversions and trigger SG calculation for any weight input change
+    updateConversions();
+    calculateSGRealTime();
+}
+
 // Calculate ABV from OG and FG
 function calculateABV() {
     const og = parseFloat(document.getElementById('og').value);
     const fg = parseFloat(document.getElementById('fg').value);
     
     if (!og || !fg) {
-        document.getElementById('abv-result').innerHTML = '<div class="error">Please enter both Original Gravity and Final Gravity</div>';
+        document.getElementById('abv-result').innerHTML = '<div class="info">Enter both Original Gravity and Final Gravity to see ABV results</div>';
         return;
     }
     
@@ -218,6 +417,20 @@ function calculateABV() {
     `;
 }
 
+// Real-time ABV calculation
+function calculateABVRealTime() {
+    // Only calculate if we have valid inputs to avoid constant error messages
+    const og = parseFloat(document.getElementById('og').value);
+    const fg = parseFloat(document.getElementById('fg').value);
+    
+    if (!og && !fg) {
+        document.getElementById('abv-result').innerHTML = '';
+        return;
+    }
+    
+    calculateABV();
+}
+
 // Calculate specific gravity from ingredients
 function calculateSG() {
     const batchSizeInput = parseFloat(document.getElementById('batch-size').value);
@@ -229,7 +442,7 @@ function calculateSG() {
     const batchSizeGallons = convertVolumeToGallons(batchSizeInput);
     
     if (!batchSizeInput || batchSizeInput <= 0) {
-        document.getElementById('sg-result').innerHTML = '<div class="error">Please enter a valid batch size</div>';
+        document.getElementById('sg-result').innerHTML = '<div class="info">Enter batch size and ingredients to see specific gravity results</div>';
         return;
     }
     
@@ -259,7 +472,7 @@ function calculateSG() {
     }
     
     if (totalFermentableSugar === 0) {
-        document.getElementById('sg-result').innerHTML = '<div class="error">Please add some fermentable ingredients</div>';
+        document.getElementById('sg-result').innerHTML = '<div class="info">Add honey or other fermentable ingredients to see results</div>';
         return;
     }
     
@@ -291,23 +504,49 @@ function calculateSG() {
     `;
 }
 
+// Real-time Specific Gravity calculation
+function calculateSGRealTime() {
+    // Only calculate if we have some inputs to avoid showing empty state constantly
+    const batchSizeInput = parseFloat(document.getElementById('batch-size').value);
+    const honeyAmountLbs = getWeightFromInputs('honey-amount');
+    const fruitAmountLbs = getWeightFromInputs('fruit-amount');
+    
+    if (!batchSizeInput && honeyAmountLbs === 0 && fruitAmountLbs === 0) {
+        document.getElementById('sg-result').innerHTML = '';
+        return;
+    }
+    
+    calculateSG();
+}
+
 // Calculate required ingredients for target ABV
 function calculateIngredients() {
     const targetABV = parseFloat(document.getElementById('target-abv').value);
     const batchSizeInput = parseFloat(document.getElementById('target-batch-size').value);
-    const honeyPercentage = parseFloat(document.getElementById('honey-percentage').value) || 100;
-    const fruitType = document.getElementById('target-fruit-type').value;
     
     // Convert batch size to gallons for calculations
     const batchSizeGallons = convertVolumeToGallons(batchSizeInput);
     
     if (!targetABV || !batchSizeInput || targetABV <= 0 || batchSizeInput <= 0) {
-        document.getElementById('ingredients-result').innerHTML = '<div class="error">Please enter valid target ABV and batch size</div>';
+        document.getElementById('ingredients-result').innerHTML = '<div class="info">Enter target ABV and batch size to see ingredient requirements</div>';
         return;
     }
     
-    if (honeyPercentage < 0 || honeyPercentage > 100) {
-        document.getElementById('ingredients-result').innerHTML = '<div class="error">Honey percentage must be between 0 and 100</div>';
+    // Check if we have any ingredients
+    if (targetIngredients.length === 0) {
+        document.getElementById('ingredients-result').innerHTML = '<div class="info">Add ingredients to see recipe calculations</div>';
+        return;
+    }
+    
+    // Check total percentage
+    const totalPercentage = targetIngredients.reduce((sum, ing) => sum + ing.percentage, 0);
+    if (totalPercentage === 0) {
+        document.getElementById('ingredients-result').innerHTML = '<div class="info">Set ingredient percentages to see recipe calculations</div>';
+        return;
+    }
+    
+    if (totalPercentage > 100) {
+        document.getElementById('ingredients-result').innerHTML = '<div class="error">Total ingredient percentages cannot exceed 100%</div>';
         return;
     }
     
@@ -318,87 +557,102 @@ function calculateIngredients() {
     const gravityPoints = (requiredOG - 1.000) * 1000;
     const totalSugarNeeded = (gravityPoints * batchSizeGallons) / GRAVITY_POINTS_PER_LB_SUGAR_PER_GALLON;
     
-    // Calculate honey and fruit amounts
-    const honeyFraction = honeyPercentage / 100;
-    const fruitFraction = 1 - honeyFraction;
+    // Calculate ingredient amounts based on percentages
+    const ingredientAmounts = [];
+    let totalCalculatedSugar = 0;
     
-    let honeyNeeded = 0;
-    let fruitNeeded = 0;
-    let resultHTML = '';
-    
-    if (fruitType && fruitFraction > 0 && ingredients[fruitType]) {
-        // Mixed fermentation: honey + fruit
-        const fruitSugarContent = ingredients[fruitType].sugarContent;
+    for (const ingredient of targetIngredients) {
+        if (ingredient.percentage === 0) continue;
         
-        // Solve for amounts: honeyNeeded * 0.8 * honeyFraction + fruitNeeded * fruitSugarContent * fruitFraction = totalSugarNeeded
-        // And: honeyNeeded * honeyFraction + fruitNeeded * fruitFraction = totalFermentableWeight
+        const fraction = ingredient.percentage / 100;
+        const sugarFromThisIngredient = totalSugarNeeded * fraction;
         
-        // Simplified approach: distribute sugar proportionally
-        const sugarFromHoney = totalSugarNeeded * honeyFraction;
-        const sugarFromFruit = totalSugarNeeded * fruitFraction;
+        let sugarContent;
+        let name;
         
-        honeyNeeded = sugarFromHoney / HONEY_SUGAR_CONTENT;
-        fruitNeeded = sugarFromFruit / fruitSugarContent;
+        if (ingredient.type === 'honey') {
+            sugarContent = HONEY_SUGAR_CONTENT;
+            name = 'Honey';
+        } else if (ingredients[ingredient.type]) {
+            sugarContent = ingredients[ingredient.type].sugarContent;
+            name = ingredients[ingredient.type].name;
+        } else {
+            continue; // Skip unknown ingredients
+        }
         
-        // Convert weights to display units
-        const honeyDisplayWeight = convertLbsToDisplayWeight(honeyNeeded);
-        const fruitDisplayWeight = convertLbsToDisplayWeight(fruitNeeded);
-        const batchDisplayVolume = convertGallonsToDisplayVolume(batchSizeGallons);
-        const weightUnit = currentWeightUnit === 'imperial' ? 'lbs' : 'kg';
-        const volumeUnit = currentVolumeUnit === 'imperial' ? 'gallon' : 'liter';
-        const volumeUnitPlural = currentVolumeUnit === 'imperial' ? 'gallons' : 'liters';
+        const amountNeeded = sugarFromThisIngredient / sugarContent;
+        totalCalculatedSugar += sugarFromThisIngredient;
         
-        resultHTML = `
-            <div class="success">
-                <h3>Recipe for ${targetABV}% ABV in ${batchDisplayVolume.toFixed(1)} ${batchDisplayVolume === 1 ? volumeUnit : volumeUnitPlural} batch:</h3>
-                <p><strong>Target Original Gravity:</strong> ${requiredOG.toFixed(3)}</p>
-                <p><strong>Total Fermentable Sugar Needed:</strong> ${totalSugarNeeded.toFixed(2)} lbs</p>
-                <h4>Required Ingredients:</h4>
-                <ul>
-                    <li><strong>${honeyDisplayWeight.toFixed(2)} ${weightUnit} Honey</strong> (${honeyFraction * 100}% of fermentables)</li>
-                    <li><strong>${fruitDisplayWeight.toFixed(2)} ${weightUnit} ${ingredients[fruitType].name}</strong> (${fruitFraction * 100}% of fermentables)</li>
-                </ul>
-                <p><strong>Sugar Contribution:</strong></p>
-                <ul>
-                    <li>Honey: ${(honeyNeeded * HONEY_SUGAR_CONTENT).toFixed(2)} lbs fermentable sugar</li>
-                    <li>${ingredients[fruitType].name}: ${(fruitNeeded * fruitSugarContent).toFixed(2)} lbs fermentable sugar</li>
-                </ul>
-            </div>
-        `;
-    } else {
-        // Honey-only mead
-        honeyNeeded = totalSugarNeeded / HONEY_SUGAR_CONTENT;
-        
-        // Convert weights to display units
-        const honeyDisplayWeight = convertLbsToDisplayWeight(honeyNeeded);
-        const batchDisplayVolume = convertGallonsToDisplayVolume(batchSizeGallons);
-        const weightUnit = currentWeightUnit === 'imperial' ? 'lbs' : 'kg';
-        const volumeUnit = currentVolumeUnit === 'imperial' ? 'gallon' : 'liter';
-        const volumeUnitPlural = currentVolumeUnit === 'imperial' ? 'gallons' : 'liters';
-        
-        resultHTML = `
-            <div class="success">
-                <h3>Honey-Only Recipe for ${targetABV}% ABV in ${batchDisplayVolume.toFixed(1)} ${batchDisplayVolume === 1 ? volumeUnit : volumeUnitPlural} batch:</h3>
-                <p><strong>Target Original Gravity:</strong> ${requiredOG.toFixed(3)}</p>
-                <p><strong>Total Fermentable Sugar Needed:</strong> ${totalSugarNeeded.toFixed(2)} lbs</p>
-                <h4>Required Ingredients:</h4>
-                <ul>
-                    <li><strong>${honeyDisplayWeight.toFixed(2)} ${weightUnit} Honey</strong></li>
-                </ul>
-                <p><strong>Honey per ${volumeUnit}:</strong> ${(honeyDisplayWeight / batchDisplayVolume).toFixed(2)} ${weightUnit}/${volumeUnit}</p>
-            </div>
-        `;
+        ingredientAmounts.push({
+            name,
+            type: ingredient.type,
+            percentage: ingredient.percentage,
+            amountLbs: amountNeeded,
+            sugarContributed: sugarFromThisIngredient,
+            sugarContent
+        });
     }
+    
+    // Display setup
+    const batchDisplayVolume = convertGallonsToDisplayVolume(batchSizeGallons);
+    const weightUnit = currentWeightUnit === 'imperial' ? 'lbs' : 'kg';
+    const volumeUnit = currentVolumeUnit === 'imperial' ? 'gallon' : 'liter';
+    const volumeUnitPlural = currentVolumeUnit === 'imperial' ? 'gallons' : 'liters';
+    
+    // Generate ingredient list HTML
+    const ingredientListHTML = ingredientAmounts.map(ing => {
+        const displayWeight = convertLbsToDisplayWeight(ing.amountLbs);
+        return `<li><strong>${displayWeight.toFixed(2)} ${weightUnit} ${ing.name}</strong> (${ing.percentage}% of fermentables)</li>`;
+    }).join('');
+    
+    // Generate sugar contribution HTML
+    const sugarContributionHTML = ingredientAmounts.map(ing => {
+        return `<li>${ing.name}: ${ing.sugarContributed.toFixed(2)} lbs fermentable sugar</li>`;
+    }).join('');
+    
+    const resultHTML = `
+        <div class="success">
+            <h3>Recipe for ${targetABV}% ABV in ${batchDisplayVolume.toFixed(1)} ${batchDisplayVolume === 1 ? volumeUnit : volumeUnitPlural} batch:</h3>
+            <p><strong>Target Original Gravity:</strong> ${requiredOG.toFixed(3)}</p>
+            <p><strong>Total Fermentable Sugar Needed:</strong> ${totalSugarNeeded.toFixed(2)} lbs</p>
+            <h4>Required Ingredients:</h4>
+            <ul>
+                ${ingredientListHTML}
+            </ul>
+            <p><strong>Sugar Contribution:</strong></p>
+            <ul>
+                ${sugarContributionHTML}
+            </ul>
+        </div>
+    `;
     
     // Add warnings for extreme values
+    let warningsHTML = '';
     if (targetABV > 18) {
-        resultHTML += '<div class="warning">⚠️ ABV above 18% may require specialized high-alcohol tolerant yeast</div>';
-    }
-    if (honeyNeeded / batchSizeGallons > 4.5) {
-        resultHTML += '<div class="warning">⚠️ Very high honey concentration - consider nutrient additions and temperature control</div>';
+        warningsHTML += '<div class="warning">⚠️ ABV above 18% may require specialized high-alcohol tolerant yeast</div>';
     }
     
-    document.getElementById('ingredients-result').innerHTML = resultHTML;
+    // Check for high sugar concentration (approximate based on total ingredients)
+    const totalIngredientWeight = ingredientAmounts.reduce((sum, ing) => sum + ing.amountLbs, 0);
+    if (totalIngredientWeight / batchSizeGallons > 4.5) {
+        warningsHTML += '<div class="warning">⚠️ Very high ingredient concentration - consider nutrient additions and temperature control</div>';
+    }
+    
+    document.getElementById('ingredients-result').innerHTML = resultHTML + warningsHTML;
+}
+
+// Real-time Target ABV calculation
+function calculateIngredientsRealTime() {
+    // Only calculate if we have basic inputs to avoid showing empty state constantly
+    const targetABV = parseFloat(document.getElementById('target-abv').value);
+    const batchSizeInput = parseFloat(document.getElementById('target-batch-size').value);
+    
+    if (!targetABV && !batchSizeInput) {
+        document.getElementById('ingredients-result').innerHTML = '';
+        return;
+    }
+    
+    calculateIngredients();
 }
 
 // Utility function to format numbers
@@ -412,7 +666,13 @@ document.addEventListener('DOMContentLoaded', function() {
     updateWeightUnits();
     updateVolumeUnits();
     
-    // Add input event listeners for real-time validation
+    // Initialize default ingredient for Target ABV section
+    initializeDefaultIngredient();
+    
+    // Add event listener for "Add Ingredient" button
+    document.getElementById('add-ingredient-btn').addEventListener('click', addIngredient);
+    
+    // Add input event listeners for ABV calculation with real-time updates
     const gravityInputs = ['og', 'fg'];
     gravityInputs.forEach(id => {
         const input = document.getElementById(id);
@@ -424,32 +684,40 @@ document.addEventListener('DOMContentLoaded', function() {
                 } else {
                     this.style.borderColor = '#ddd';
                 }
+                
+                // Trigger real-time ABV calculation
+                calculateABVRealTime();
             });
         }
     });
     
-    // Add input event listeners for weight inputs to update conversion displays
+    // Add input event listeners for weight inputs with overflow handling
     const weightInputs = ['honey-amount', 'honey-oz', 'fruit-amount', 'fruit-oz'];
     weightInputs.forEach(id => {
         const input = document.getElementById(id);
         if (input) {
-            input.addEventListener('input', function() {
-                updateConversions();
-            });
+            input.addEventListener('input', handleWeightInputChange);
+            input.addEventListener('change', handleWeightInputChange); // Also handle change events
         }
     });
     
-    // Add Enter key support for calculations
-    document.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            const activeElement = document.activeElement;
-            if (activeElement.closest('.calc-section')) {
-                const section = activeElement.closest('.calc-section');
-                const button = section.querySelector('button');
-                if (button) {
-                    button.click();
-                }
-            }
+    // Add event listeners for SG calculation inputs
+    const sgInputs = ['batch-size', 'fruit-type'];
+    sgInputs.forEach(id => {
+        const input = document.getElementById(id);
+        if (input) {
+            input.addEventListener('input', calculateSGRealTime);
+            input.addEventListener('change', calculateSGRealTime);
+        }
+    });
+    
+    // Add event listeners for Target ABV calculation inputs
+    const targetABVInputs = ['target-abv', 'target-batch-size'];
+    targetABVInputs.forEach(id => {
+        const input = document.getElementById(id);
+        if (input) {
+            input.addEventListener('input', calculateIngredientsRealTime);
+            input.addEventListener('change', calculateIngredientsRealTime);
         }
     });
 });

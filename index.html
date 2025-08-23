@@ -50,7 +50,6 @@
                     <label for="fg">Final Gravity (FG):</label>
                     <input type="number" id="fg" step="0.001" min="0.990" max="1.050" placeholder="1.000">
                 </div>
-                <button onclick="calculateABV()">Calculate ABV</button>
                 <div class="result" id="abv-result"></div>
             </div>
 
@@ -64,8 +63,8 @@
                 <div class="input-group honey-input">
                     <label for="honey-amount" id="honey-label">Honey (lbs):</label>
                     <div class="weight-input-container">
-                        <input type="number" id="honey-amount" step="0.1" min="0" placeholder="3">
-                        <input type="number" id="honey-oz" step="1" min="0" max="15" placeholder="0" class="oz-input" style="display:none;">
+                        <input type="number" id="honey-amount" step="1" min="0" placeholder="3">
+                        <input type="number" id="honey-oz" step="0.1" min="0" max="15.9" placeholder="0" class="oz-input" style="display:none;">
                     </div>
                     <small id="honey-conversion" class="conversion-display"></small>
                 </div>
@@ -99,12 +98,11 @@
                 <div class="input-group fruit-input">
                     <label for="fruit-amount" id="fruit-label">Amount (lbs):</label>
                     <div class="weight-input-container">
-                        <input type="number" id="fruit-amount" step="0.1" min="0" placeholder="2">
-                        <input type="number" id="fruit-oz" step="1" min="0" max="15" placeholder="0" class="oz-input" style="display:none;">
+                        <input type="number" id="fruit-amount" step="1" min="0" placeholder="2">
+                        <input type="number" id="fruit-oz" step="0.1" min="0" max="15.9" placeholder="0" class="oz-input" style="display:none;">
                     </div>
                     <small id="fruit-conversion" class="conversion-display"></small>
                 </div>
-                <button onclick="calculateSG()">Calculate Specific Gravity</button>
                 <div class="result" id="sg-result"></div>
             </div>
 
@@ -119,39 +117,18 @@
                     <label for="target-batch-size" id="target-batch-label">Batch Size (gallons):</label>
                     <input type="number" id="target-batch-size" step="0.1" min="0.1" max="50" value="1" placeholder="1">
                 </div>
-                <div class="input-group">
-                    <label for="honey-percentage">Honey Percentage of Fermentables:</label>
-                    <input type="number" id="honey-percentage" step="1" min="0" max="100" value="100" placeholder="100">
-                    <small>Remaining percentage will be calculated for selected fruit</small>
+                <div class="ingredients-section">
+                    <h3>Fermentable Ingredients</h3>
+                    <div id="ingredients-list">
+                        <!-- Dynamic ingredient inputs will be added here -->
+                    </div>
+                    <div class="ingredient-controls">
+                        <button type="button" id="add-ingredient-btn" class="add-btn">+ Add Ingredient</button>
+                        <div class="total-percentage">
+                            <span>Total: </span><span id="total-percentage">0</span>%
+                        </div>
+                    </div>
                 </div>
-                <div class="input-group">
-                    <label for="target-fruit-type">Additional Fruit/Sweetener:</label>
-                    <select id="target-fruit-type">
-                        <option value="">None (honey only)</option>
-                        <option value="apple">Apple (fresh)</option>
-                        <option value="apple-juice">Apple Juice</option>
-                        <option value="blackberry">Blackberry</option>
-                        <option value="blueberry">Blueberry</option>
-                        <option value="cherry">Cherry (sweet)</option>
-                        <option value="cherry-tart">Cherry (tart)</option>
-                        <option value="cranberry">Cranberry</option>
-                        <option value="grape">Grape (fresh)</option>
-                        <option value="grape-juice">Grape Juice</option>
-                        <option value="orange">Orange</option>
-                        <option value="orange-juice">Orange Juice</option>
-                        <option value="peach">Peach</option>
-                        <option value="pear">Pear</option>
-                        <option value="raspberry">Raspberry</option>
-                        <option value="strawberry">Strawberry</option>
-                        <option value="elderberry">Elderberry</option>
-                        <option value="elderflower">Elderflower</option>
-                        <option value="cane-sugar">Cane Sugar</option>
-                        <option value="brown-sugar">Brown Sugar</option>
-                        <option value="maple-syrup">Maple Syrup</option>
-                        <option value="agave">Agave Nectar</option>
-                    </select>
-                </div>
-                <button onclick="calculateIngredients()">Calculate Required Ingredients</button>
                 <div class="result" id="ingredients-result"></div>
             </div>
 
