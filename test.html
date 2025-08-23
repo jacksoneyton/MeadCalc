@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MeadCalc Test</title>
+</head>
+<body>
+    <h1>MeadCalc Calculation Tests</h1>
+    <div id="test-results"></div>
+    
+    <script src="calculator.js"></script>
+    <script>
+        // Test calculations with known values
+        function runTests() {
+            const results = [];
+            
+            // Test 1: ABV Calculation
+            // Known: OG 1.090, FG 1.000 should give ~11.81% ABV
+            const testABV = (1.090 - 1.000) * 131.25;
+            results.push(`ABV Test: OG 1.090, FG 1.000 = ${testABV.toFixed(2)}% ABV (Expected: ~11.81%)`);
+            
+            // Test 2: Specific Gravity from Honey
+            // Known: 3 lbs honey in 1 gallon should give ~1.090 OG
+            const honeySugar = 3 * 0.80; // 2.4 lbs fermentable sugar
+            const gravityPoints = (honeySugar / 1) * 46; // 110.4 points
+            const testSG = 1.000 + (gravityPoints / 1000);
+            results.push(`SG Test: 3 lbs honey in 1 gallon = ${testSG.toFixed(3)} OG (Expected: ~1.090)`);
+            
+            // Test 3: Target ABV calculation
+            // For 12% ABV, need OG of ~1.091
+            const targetABV = 12;
+            const requiredOG = 1.000 + (targetABV / 131.25);
+            const totalSugarNeeded = ((requiredOG - 1.000) * 1000 * 1) / 46;
+            const honeyNeeded = totalSugarNeeded / 0.80;
+            results.push(`Target ABV Test: For 12% ABV need OG ${requiredOG.toFixed(3)}, requiring ${honeyNeeded.toFixed(2)} lbs honey per gallon`);
+            
+            // Test 4: Apple juice addition
+            // 2 lbs apple juice (24% sugar) should add ~0.48 lbs sugar
+            const appleJuiceSugar = 2 * 0.24;
+            const appleJuicePoints = appleJuiceSugar * 46;
+            results.push(`Apple Juice Test: 2 lbs apple juice adds ${appleJuiceSugar} lbs sugar, ${appleJuicePoints} gravity points`);
+            
+            document.getElementById('test-results').innerHTML = 
+                '<h2>Test Results:</h2><ul>' + 
+                results.map(result => `<li>${result}</li>`).join('') + 
+                '</ul>';
+        }
+        
+        // Run tests when page loads
+        window.onload = runTests;
+    </script>
+</body>
+</html>
