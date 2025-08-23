@@ -24,9 +24,23 @@ header {
     color: #d4af37;
 }
 
+.logo-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 8px;
+}
+
+.logo {
+    height: 60px;
+    width: auto;
+    filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.5));
+}
+
 header h1 {
     font-size: 2.8rem;
-    margin-bottom: 8px;
+    margin: 0;
     text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
     background: linear-gradient(135deg, #ffd700 0%, #ffb347 100%);
     -webkit-background-clip: text;
@@ -500,6 +514,15 @@ header p {
         padding: 12px;
     }
     
+    .logo-container {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .logo {
+        height: 50px;
+    }
+    
     header h1 {
         font-size: 2.3rem;
     }
@@ -523,6 +546,10 @@ header p {
 }
 
 @media (max-width: 480px) {
+    .logo {
+        height: 40px;
+    }
+    
     header h1 {
         font-size: 1.9rem;
     }
