@@ -140,41 +140,68 @@
             <div class="calc-section">
                 <h2>Quick Reference</h2>
                 <div class="reference-content">
-                    <h3>Common Mead Types by ABV:</h3>
-                    <ul>
-                        <li><strong>Session Mead:</strong> 3-7% ABV</li>
-                        <li><strong>Traditional Mead:</strong> 8-15% ABV</li>
-                        <li><strong>Sack Mead:</strong> 14-20% ABV</li>
-                    </ul>
-                    <h3>Honey Guidelines:</h3>
-                    <ul>
-                        <li><strong>Light Mead:</strong> 2-2.5 lbs honey per gallon</li>
-                        <li><strong>Medium Mead:</strong> 3-3.5 lbs honey per gallon</li>
-                        <li><strong>Strong Mead:</strong> 4+ lbs honey per gallon</li>
-                    </ul>
-                    <h3>Specific Gravity Ranges:</h3>
-                    <ul>
-                        <li><strong>Light:</strong> 1.035-1.050 OG</li>
-                        <li><strong>Medium:</strong> 1.051-1.070 OG</li>
-                        <li><strong>Strong:</strong> 1.071-1.130+ OG</li>
-                    </ul>
-                    <h3>Traditional Mead Types:</h3>
-                    <ul>
-                        <li><strong>Traditional:</strong> Honey and water only</li>
-                        <li><strong>Melomel:</strong> Honey with fruit</li>
-                        <li><strong>Cyser:</strong> Honey with apples or apple juice</li>
-                        <li><strong>Pyment:</strong> Honey with grapes or grape juice</li>
-                        <li><strong>Metheglin:</strong> Honey with herbs and/or spices</li>
-                        <li><strong>Braggot:</strong> Honey with malt (beer-mead hybrid)</li>
-                        <li><strong>Acerglyn:</strong> Honey with maple syrup</li>
-                        <li><strong>Bochet:</strong> Made with caramelized/burned honey</li>
-                        <li><strong>Capsicumel:</strong> Honey with peppers/chiles</li>
-                        <li><strong>Hippocras:</strong> Pyment with herbs and spices</li>
-                        <li><strong>Oxymela:</strong> Honey with vinegar (historical)</li>
-                        <li><strong>Rhodomel:</strong> Honey with rose petals/hips</li>
-                        <li><strong>Morat:</strong> Honey with mulberries</li>
-                        <li><strong>Omphacomel:</strong> Honey with verjuice (unripe grapes)</li>
-                    </ul>
+                    <div class="collapsible-section">
+                        <h3 class="collapsible-header" onclick="toggleSection('specific-gravity')">
+                            <span class="toggle-icon">▶</span> Specific Gravity Ranges
+                        </h3>
+                        <div class="collapsible-content" id="specific-gravity">
+                            <ul>
+                                <li><strong>Light:</strong> 1.035-1.050 OG</li>
+                                <li><strong>Medium:</strong> 1.051-1.070 OG</li>
+                                <li><strong>Strong:</strong> 1.071-1.130+ OG</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="collapsible-section">
+                        <h3 class="collapsible-header" onclick="toggleSection('honey-guidelines')">
+                            <span class="toggle-icon">▶</span> Honey Guidelines
+                        </h3>
+                        <div class="collapsible-content" id="honey-guidelines">
+                            <ul>
+                                <li><strong>Light Mead:</strong> 2-2.5 lbs honey per gallon</li>
+                                <li><strong>Medium Mead:</strong> 3-3.5 lbs honey per gallon</li>
+                                <li><strong>Strong Mead:</strong> 4+ lbs honey per gallon</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="collapsible-section">
+                        <h3 class="collapsible-header" onclick="toggleSection('abv-types')">
+                            <span class="toggle-icon">▶</span> Common Mead Types by ABV
+                        </h3>
+                        <div class="collapsible-content" id="abv-types">
+                            <ul>
+                                <li><strong>Session Mead:</strong> 3-7% ABV</li>
+                                <li><strong>Traditional Mead:</strong> 8-15% ABV</li>
+                                <li><strong>Sack Mead:</strong> 14-20% ABV</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="collapsible-section">
+                        <h3 class="collapsible-header" onclick="toggleSection('traditional-types')">
+                            <span class="toggle-icon">▶</span> Traditional Mead Types
+                        </h3>
+                        <div class="collapsible-content" id="traditional-types">
+                            <ul>
+                                <li><strong>Traditional:</strong> Honey and water only</li>
+                                <li><strong>Melomel:</strong> Honey with fruit</li>
+                                <li><strong>Cyser:</strong> Honey with apples or apple juice</li>
+                                <li><strong>Pyment:</strong> Honey with grapes or grape juice</li>
+                                <li><strong>Metheglin:</strong> Honey with herbs and/or spices</li>
+                                <li><strong>Braggot:</strong> Honey with malt (beer-mead hybrid)</li>
+                                <li><strong>Acerglyn:</strong> Honey with maple syrup</li>
+                                <li><strong>Bochet:</strong> Made with caramelized/burned honey</li>
+                                <li><strong>Capsicumel:</strong> Honey with peppers/chiles</li>
+                                <li><strong>Hippocras:</strong> Pyment with herbs and spices</li>
+                                <li><strong>Oxymela:</strong> Honey with vinegar (historical)</li>
+                                <li><strong>Rhodomel:</strong> Honey with rose petals/hips</li>
+                                <li><strong>Morat:</strong> Honey with mulberries</li>
+                                <li><strong>Omphacomel:</strong> Honey with verjuice (unripe grapes)</li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

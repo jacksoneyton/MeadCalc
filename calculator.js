@@ -203,6 +203,23 @@ function updateConversionDisplay(elementId, weightInLbs) {
     element.textContent = conversionText;
 }
 
+// Collapsible section functionality
+function toggleSection(sectionId) {
+    const content = document.getElementById(sectionId);
+    const header = content.previousElementSibling;
+    const icon = header.querySelector('.toggle-icon');
+    
+    if (content.style.display === 'block') {
+        content.style.display = 'none';
+        icon.textContent = '▶';
+        header.classList.remove('expanded');
+    } else {
+        content.style.display = 'block';
+        icon.textContent = '▼';
+        header.classList.add('expanded');
+    }
+}
+
 // Dynamic ingredient management functions
 function addIngredient() {
     const id = `ingredient-${ingredientCounter++}`;
