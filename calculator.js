@@ -30,6 +30,165 @@ const HONEY_SUGAR_CONTENT = 0.80;
 const GRAVITY_POINTS_PER_LB_SUGAR_PER_GALLON = 46; // Points (1.046 = 46 points)
 const ABV_FACTOR = 131.25; // Conversion factor for ABV calculation
 
+// Unit conversion constants
+const LBS_TO_KG = 0.453592;
+const KG_TO_LBS = 2.20462;
+const OZ_TO_GRAMS = 28.3495;
+const GRAMS_TO_OZ = 0.035274;
+const GALLONS_TO_LITERS = 3.78541;
+const LITERS_TO_GALLONS = 0.264172;
+
+// Current unit settings
+let currentWeightUnit = 'imperial'; // 'imperial' or 'metric'
+let currentVolumeUnit = 'imperial'; // 'imperial' or 'metric'
+
+// Unit conversion functions
+function convertWeightToLbs(amount, unit = currentWeightUnit) {
+    if (unit === 'metric') {
+        return amount * KG_TO_LBS; // Convert kg to lbs
+    }
+    return amount; // Already in lbs
+}
+
+function convertLbsToDisplayWeight(lbs, unit = currentWeightUnit) {
+    if (unit === 'metric') {
+        return lbs * LBS_TO_KG; // Convert lbs to kg
+    }
+    return lbs; // Already in lbs
+}
+
+function convertVolumeToGallons(amount, unit = currentVolumeUnit) {
+    if (unit === 'metric') {
+        return amount * LITERS_TO_GALLONS; // Convert liters to gallons
+    }
+    return amount; // Already in gallons
+}
+
+function convertGallonsToDisplayVolume(gallons, unit = currentVolumeUnit) {
+    if (unit === 'metric') {
+        return gallons * GALLONS_TO_LITERS; // Convert gallons to liters
+    }
+    return gallons; // Already in gallons
+}
+
+function getWeightFromInputs(baseId) {
+    const mainInput = document.getElementById(baseId);
+    const ozInput = document.getElementById(baseId.replace('-amount', '-oz'));
+    
+    let totalWeight = 0;
+    
+    if (currentWeightUnit === 'imperial') {
+        const lbs = parseFloat(mainInput.value) || 0;
+        const oz = parseFloat(ozInput.value) || 0;
+        totalWeight = lbs + (oz / 16); // Convert oz to lbs and add
+    } else {
+        const kg = parseFloat(mainInput.value) || 0;
+        const grams = parseFloat(ozInput.value) || 0;
+        totalWeight = (kg + (grams / 1000)) * KG_TO_LBS; // Convert to lbs for calculations
+    }
+    
+    return totalWeight;
+}
+
+function updateWeightUnits() {
+    const selectedUnit = document.querySelector('input[name="weight-units"]:checked').value;
+    currentWeightUnit = selectedUnit;
+    
+    // Update labels and placeholders
+    updateWeightLabels();
+    
+    // Show/hide oz/gram inputs and update their styling
+    updateWeightInputs();
+    
+    // Update any conversion displays
+    updateConversions();
+}
+
+function updateVolumeUnits() {
+    const selectedUnit = document.querySelector('input[name="volume-units"]:checked').value;
+    currentVolumeUnit = selectedUnit;
+    
+    // Update volume labels
+    updateVolumeLabels();
+}
+
+function updateWeightLabels() {
+    const honeyLabel = document.getElementById('honey-label');
+    const fruitLabel = document.getElementById('fruit-label');
+    
+    if (currentWeightUnit === 'imperial') {
+        honeyLabel.textContent = 'Honey (lbs):';
+        fruitLabel.textContent = 'Amount (lbs):';
+    } else {
+        honeyLabel.textContent = 'Honey (kg):';
+        fruitLabel.textContent = 'Amount (kg):';
+    }
+}
+
+function updateVolumeLabels() {
+    const batchLabel = document.getElementById('batch-label');
+    const targetBatchLabel = document.getElementById('target-batch-label');
+    
+    if (currentVolumeUnit === 'imperial') {
+        batchLabel.textContent = 'Batch Size (gallons):';
+        targetBatchLabel.textContent = 'Batch Size (gallons):';
+    } else {
+        batchLabel.textContent = 'Batch Size (liters):';
+        targetBatchLabel.textContent = 'Batch Size (liters):';
+    }
+}
+
+function updateWeightInputs() {
+    const honeyOz = document.getElementById('honey-oz');
+    const fruitOz = document.getElementById('fruit-oz');
+    
+    if (currentWeightUnit === 'imperial') {
+        // Show oz inputs
+        honeyOz.style.display = 'inline-block';
+        fruitOz.style.display = 'inline-block';
+        honeyOz.placeholder = 'oz';
+        fruitOz.placeholder = 'oz';
+        honeyOz.max = '15';
+        fruitOz.max = '15';
+    } else {
+        // Show gram inputs
+        honeyOz.style.display = 'inline-block';
+        fruitOz.style.display = 'inline-block';
+        honeyOz.placeholder = 'g';
+        fruitOz.placeholder = 'g';
+        honeyOz.max = '999';
+        fruitOz.max = '999';
+    }
+}
+
+function updateConversions() {
+    // Update conversion displays for current inputs
+    const honeyAmount = getWeightFromInputs('honey-amount');
+    const fruitAmount = getWeightFromInputs('fruit-amount');
+    
+    updateConversionDisplay('honey-conversion', honeyAmount);
+    updateConversionDisplay('fruit-conversion', fruitAmount);
+}
+
+function updateConversionDisplay(elementId, weightInLbs) {
+    const element = document.getElementById(elementId);
+    if (!weightInLbs || weightInLbs === 0) {
+        element.textContent = '';
+        return;
+    }
+    
+    let conversionText = '';
+    if (currentWeightUnit === 'imperial') {
+        const kg = weightInLbs * LBS_TO_KG;
+        conversionText = `≈ ${kg.toFixed(2)} kg`;
+    } else {
+        const displayWeight = convertLbsToDisplayWeight(weightInLbs);
+        conversionText = `≈ ${(weightInLbs).toFixed(2)} lbs`;
+    }
+    
+    element.textContent = conversionText;
+}
+
 // Calculate ABV from OG and FG
 function calculateABV() {
     const og = parseFloat(document.getElementById('og').value);
@@ -61,12 +220,15 @@ function calculateABV() {
 
 // Calculate specific gravity from ingredients
 function calculateSG() {
-    const batchSize = parseFloat(document.getElementById('batch-size').value);
-    const honeyAmount = parseFloat(document.getElementById('honey-amount').value) || 0;
+    const batchSizeInput = parseFloat(document.getElementById('batch-size').value);
+    const honeyAmountLbs = getWeightFromInputs('honey-amount');
     const fruitType = document.getElementById('fruit-type').value;
-    const fruitAmount = parseFloat(document.getElementById('fruit-amount').value) || 0;
+    const fruitAmountLbs = getWeightFromInputs('fruit-amount');
     
-    if (!batchSize || batchSize <= 0) {
+    // Convert batch size to gallons for calculations
+    const batchSizeGallons = convertVolumeToGallons(batchSizeInput);
+    
+    if (!batchSizeInput || batchSizeInput <= 0) {
         document.getElementById('sg-result').innerHTML = '<div class="error">Please enter a valid batch size</div>';
         return;
     }
@@ -75,17 +237,25 @@ function calculateSG() {
     let ingredientsList = [];
     
     // Calculate sugar from honey
-    if (honeyAmount > 0) {
-        const honeySugar = honeyAmount * HONEY_SUGAR_CONTENT;
+    if (honeyAmountLbs > 0) {
+        const honeySugar = honeyAmountLbs * HONEY_SUGAR_CONTENT;
         totalFermentableSugar += honeySugar;
-        ingredientsList.push(`${honeyAmount} lbs honey (${honeySugar.toFixed(2)} lbs fermentable sugar)`);
+        
+        // Display in user's preferred units
+        const honeyDisplayWeight = convertLbsToDisplayWeight(honeyAmountLbs);
+        const weightUnit = currentWeightUnit === 'imperial' ? 'lbs' : 'kg';
+        ingredientsList.push(`${honeyDisplayWeight.toFixed(2)} ${weightUnit} honey (${honeySugar.toFixed(2)} lbs fermentable sugar)`);
     }
     
     // Calculate sugar from fruit/sweetener
-    if (fruitType && fruitAmount > 0 && ingredients[fruitType]) {
-        const fruitSugar = fruitAmount * ingredients[fruitType].sugarContent;
+    if (fruitType && fruitAmountLbs > 0 && ingredients[fruitType]) {
+        const fruitSugar = fruitAmountLbs * ingredients[fruitType].sugarContent;
         totalFermentableSugar += fruitSugar;
-        ingredientsList.push(`${fruitAmount} lbs ${ingredients[fruitType].name} (${fruitSugar.toFixed(2)} lbs fermentable sugar)`);
+        
+        // Display in user's preferred units
+        const fruitDisplayWeight = convertLbsToDisplayWeight(fruitAmountLbs);
+        const weightUnit = currentWeightUnit === 'imperial' ? 'lbs' : 'kg';
+        ingredientsList.push(`${fruitDisplayWeight.toFixed(2)} ${weightUnit} ${ingredients[fruitType].name} (${fruitSugar.toFixed(2)} lbs fermentable sugar)`);
     }
     
     if (totalFermentableSugar === 0) {
@@ -94,16 +264,21 @@ function calculateSG() {
     }
     
     // Calculate specific gravity: SG = 1 + (sugar_lbs / gallons * points_per_lb_per_gallon / 1000)
-    const gravityPoints = (totalFermentableSugar / batchSize) * GRAVITY_POINTS_PER_LB_SUGAR_PER_GALLON;
+    const gravityPoints = (totalFermentableSugar / batchSizeGallons) * GRAVITY_POINTS_PER_LB_SUGAR_PER_GALLON;
     const specificGravity = 1.000 + (gravityPoints / 1000);
     const potentialABV = (specificGravity - 1.000) * ABV_FACTOR;
     
     // Calculate approximate sugar concentration
-    const sugarConcentration = (totalFermentableSugar / batchSize) * 16; // oz per gallon
+    const sugarConcentration = (totalFermentableSugar / batchSizeGallons) * 16; // oz per gallon
+    
+    // Display batch size in user's preferred units
+    const batchDisplayVolume = convertGallonsToDisplayVolume(batchSizeGallons);
+    const volumeUnit = currentVolumeUnit === 'imperial' ? 'gallon' : 'liter';
+    const volumeUnitPlural = currentVolumeUnit === 'imperial' ? 'gallons' : 'liters';
     
     document.getElementById('sg-result').innerHTML = `
         <div class="success">
-            <h3>Results for ${batchSize} gallon batch:</h3>
+            <h3>Results for ${batchDisplayVolume.toFixed(1)} ${batchDisplayVolume === 1 ? volumeUnit : volumeUnitPlural} batch:</h3>
             <p><strong>Estimated Original Gravity:</strong> ${specificGravity.toFixed(3)}</p>
             <p><strong>Potential ABV:</strong> ${potentialABV.toFixed(2)}%</p>
             <p><strong>Total Fermentable Sugar:</strong> ${totalFermentableSugar.toFixed(2)} lbs</p>
@@ -119,11 +294,14 @@ function calculateSG() {
 // Calculate required ingredients for target ABV
 function calculateIngredients() {
     const targetABV = parseFloat(document.getElementById('target-abv').value);
-    const batchSize = parseFloat(document.getElementById('target-batch-size').value);
+    const batchSizeInput = parseFloat(document.getElementById('target-batch-size').value);
     const honeyPercentage = parseFloat(document.getElementById('honey-percentage').value) || 100;
     const fruitType = document.getElementById('target-fruit-type').value;
     
-    if (!targetABV || !batchSize || targetABV <= 0 || batchSize <= 0) {
+    // Convert batch size to gallons for calculations
+    const batchSizeGallons = convertVolumeToGallons(batchSizeInput);
+    
+    if (!targetABV || !batchSizeInput || targetABV <= 0 || batchSizeInput <= 0) {
         document.getElementById('ingredients-result').innerHTML = '<div class="error">Please enter valid target ABV and batch size</div>';
         return;
     }
@@ -138,7 +316,7 @@ function calculateIngredients() {
     
     // Calculate total fermentable sugar needed
     const gravityPoints = (requiredOG - 1.000) * 1000;
-    const totalSugarNeeded = (gravityPoints * batchSize) / GRAVITY_POINTS_PER_LB_SUGAR_PER_GALLON;
+    const totalSugarNeeded = (gravityPoints * batchSizeGallons) / GRAVITY_POINTS_PER_LB_SUGAR_PER_GALLON;
     
     // Calculate honey and fruit amounts
     const honeyFraction = honeyPercentage / 100;
@@ -162,15 +340,23 @@ function calculateIngredients() {
         honeyNeeded = sugarFromHoney / HONEY_SUGAR_CONTENT;
         fruitNeeded = sugarFromFruit / fruitSugarContent;
         
+        // Convert weights to display units
+        const honeyDisplayWeight = convertLbsToDisplayWeight(honeyNeeded);
+        const fruitDisplayWeight = convertLbsToDisplayWeight(fruitNeeded);
+        const batchDisplayVolume = convertGallonsToDisplayVolume(batchSizeGallons);
+        const weightUnit = currentWeightUnit === 'imperial' ? 'lbs' : 'kg';
+        const volumeUnit = currentVolumeUnit === 'imperial' ? 'gallon' : 'liter';
+        const volumeUnitPlural = currentVolumeUnit === 'imperial' ? 'gallons' : 'liters';
+        
         resultHTML = `
             <div class="success">
-                <h3>Recipe for ${targetABV}% ABV in ${batchSize} gallon batch:</h3>
+                <h3>Recipe for ${targetABV}% ABV in ${batchDisplayVolume.toFixed(1)} ${batchDisplayVolume === 1 ? volumeUnit : volumeUnitPlural} batch:</h3>
                 <p><strong>Target Original Gravity:</strong> ${requiredOG.toFixed(3)}</p>
                 <p><strong>Total Fermentable Sugar Needed:</strong> ${totalSugarNeeded.toFixed(2)} lbs</p>
                 <h4>Required Ingredients:</h4>
                 <ul>
-                    <li><strong>${honeyNeeded.toFixed(2)} lbs Honey</strong> (${honeyFraction * 100}% of fermentables)</li>
-                    <li><strong>${fruitNeeded.toFixed(2)} lbs ${ingredients[fruitType].name}</strong> (${fruitFraction * 100}% of fermentables)</li>
+                    <li><strong>${honeyDisplayWeight.toFixed(2)} ${weightUnit} Honey</strong> (${honeyFraction * 100}% of fermentables)</li>
+                    <li><strong>${fruitDisplayWeight.toFixed(2)} ${weightUnit} ${ingredients[fruitType].name}</strong> (${fruitFraction * 100}% of fermentables)</li>
                 </ul>
                 <p><strong>Sugar Contribution:</strong></p>
                 <ul>
@@ -183,16 +369,23 @@ function calculateIngredients() {
         // Honey-only mead
         honeyNeeded = totalSugarNeeded / HONEY_SUGAR_CONTENT;
         
+        // Convert weights to display units
+        const honeyDisplayWeight = convertLbsToDisplayWeight(honeyNeeded);
+        const batchDisplayVolume = convertGallonsToDisplayVolume(batchSizeGallons);
+        const weightUnit = currentWeightUnit === 'imperial' ? 'lbs' : 'kg';
+        const volumeUnit = currentVolumeUnit === 'imperial' ? 'gallon' : 'liter';
+        const volumeUnitPlural = currentVolumeUnit === 'imperial' ? 'gallons' : 'liters';
+        
         resultHTML = `
             <div class="success">
-                <h3>Honey-Only Recipe for ${targetABV}% ABV in ${batchSize} gallon batch:</h3>
+                <h3>Honey-Only Recipe for ${targetABV}% ABV in ${batchDisplayVolume.toFixed(1)} ${batchDisplayVolume === 1 ? volumeUnit : volumeUnitPlural} batch:</h3>
                 <p><strong>Target Original Gravity:</strong> ${requiredOG.toFixed(3)}</p>
                 <p><strong>Total Fermentable Sugar Needed:</strong> ${totalSugarNeeded.toFixed(2)} lbs</p>
                 <h4>Required Ingredients:</h4>
                 <ul>
-                    <li><strong>${honeyNeeded.toFixed(2)} lbs Honey</strong></li>
+                    <li><strong>${honeyDisplayWeight.toFixed(2)} ${weightUnit} Honey</strong></li>
                 </ul>
-                <p><strong>Honey per gallon:</strong> ${(honeyNeeded / batchSize).toFixed(2)} lbs/gallon</p>
+                <p><strong>Honey per ${volumeUnit}:</strong> ${(honeyDisplayWeight / batchDisplayVolume).toFixed(2)} ${weightUnit}/${volumeUnit}</p>
             </div>
         `;
     }
@@ -201,7 +394,7 @@ function calculateIngredients() {
     if (targetABV > 18) {
         resultHTML += '<div class="warning">⚠️ ABV above 18% may require specialized high-alcohol tolerant yeast</div>';
     }
-    if (honeyNeeded / batchSize > 4.5) {
+    if (honeyNeeded / batchSizeGallons > 4.5) {
         resultHTML += '<div class="warning">⚠️ Very high honey concentration - consider nutrient additions and temperature control</div>';
     }
     
@@ -215,6 +408,10 @@ function formatNumber(num, decimals = 2) {
 
 // Input validation and formatting
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize unit displays
+    updateWeightUnits();
+    updateVolumeUnits();
+    
     // Add input event listeners for real-time validation
     const gravityInputs = ['og', 'fg'];
     gravityInputs.forEach(id => {
@@ -227,6 +424,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 } else {
                     this.style.borderColor = '#ddd';
                 }
+            });
+        }
+    });
+    
+    // Add input event listeners for weight inputs to update conversion displays
+    const weightInputs = ['honey-amount', 'honey-oz', 'fruit-amount', 'fruit-oz'];
+    weightInputs.forEach(id => {
+        const input = document.getElementById(id);
+        if (input) {
+            input.addEventListener('input', function() {
+                updateConversions();
             });
         }
     });

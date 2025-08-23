@@ -35,6 +35,70 @@ header p {
     opacity: 0.9;
 }
 
+.unit-selector {
+    background: white;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.unit-selector h3 {
+    color: #4a5568;
+    margin-bottom: 15px;
+    font-size: 1.3rem;
+}
+
+.unit-options {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-bottom: 15px;
+}
+
+.unit-options:last-child {
+    margin-bottom: 0;
+}
+
+.unit-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    color: #4a5568;
+    transition: color 0.3s ease;
+}
+
+.unit-option:hover {
+    color: #667eea;
+}
+
+.unit-option input[type="radio"] {
+    margin: 0;
+    cursor: pointer;
+}
+
+.weight-input-container {
+    display: flex;
+    gap: 10px;
+}
+
+.weight-input-container input {
+    flex: 1;
+}
+
+.oz-input {
+    max-width: 80px;
+}
+
+.conversion-display {
+    color: #718096;
+    font-style: italic;
+    margin-top: 5px;
+}
+
 .calculator-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));

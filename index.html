@@ -13,6 +13,31 @@
             <p>Calculate ABV, Specific Gravity, and Sweetener Amounts for Mead Making</p>
         </header>
 
+        <!-- Unit Selection -->
+        <div class="unit-selector">
+            <h3>Units:</h3>
+            <div class="unit-options">
+                <label class="unit-option">
+                    <input type="radio" name="weight-units" value="imperial" checked onclick="updateWeightUnits()">
+                    <span>Imperial (lbs/oz)</span>
+                </label>
+                <label class="unit-option">
+                    <input type="radio" name="weight-units" value="metric" onclick="updateWeightUnits()">
+                    <span>Metric (kg/g)</span>
+                </label>
+            </div>
+            <div class="unit-options">
+                <label class="unit-option">
+                    <input type="radio" name="volume-units" value="imperial" checked onclick="updateVolumeUnits()">
+                    <span>Gallons</span>
+                </label>
+                <label class="unit-option">
+                    <input type="radio" name="volume-units" value="metric" onclick="updateVolumeUnits()">
+                    <span>Liters</span>
+                </label>
+            </div>
+        </div>
+
         <div class="calculator-grid">
             <!-- ABV Calculator -->
             <div class="calc-section">
@@ -33,12 +58,16 @@
             <div class="calc-section">
                 <h2>Specific Gravity from Ingredients</h2>
                 <div class="input-group">
-                    <label for="batch-size">Batch Size (gallons):</label>
+                    <label for="batch-size" id="batch-label">Batch Size (gallons):</label>
                     <input type="number" id="batch-size" step="0.1" min="0.1" max="50" value="1" placeholder="1">
                 </div>
-                <div class="input-group">
-                    <label for="honey-amount">Honey (lbs):</label>
-                    <input type="number" id="honey-amount" step="0.1" min="0" placeholder="3">
+                <div class="input-group honey-input">
+                    <label for="honey-amount" id="honey-label">Honey (lbs):</label>
+                    <div class="weight-input-container">
+                        <input type="number" id="honey-amount" step="0.1" min="0" placeholder="3">
+                        <input type="number" id="honey-oz" step="1" min="0" max="15" placeholder="0" class="oz-input" style="display:none;">
+                    </div>
+                    <small id="honey-conversion" class="conversion-display"></small>
                 </div>
                 <div class="input-group">
                     <label for="fruit-type">Fruit/Sweetener:</label>
@@ -67,9 +96,13 @@
                         <option value="agave">Agave Nectar</option>
                     </select>
                 </div>
-                <div class="input-group">
-                    <label for="fruit-amount">Amount (lbs):</label>
-                    <input type="number" id="fruit-amount" step="0.1" min="0" placeholder="2">
+                <div class="input-group fruit-input">
+                    <label for="fruit-amount" id="fruit-label">Amount (lbs):</label>
+                    <div class="weight-input-container">
+                        <input type="number" id="fruit-amount" step="0.1" min="0" placeholder="2">
+                        <input type="number" id="fruit-oz" step="1" min="0" max="15" placeholder="0" class="oz-input" style="display:none;">
+                    </div>
+                    <small id="fruit-conversion" class="conversion-display"></small>
                 </div>
                 <button onclick="calculateSG()">Calculate Specific Gravity</button>
                 <div class="result" id="sg-result"></div>
@@ -83,7 +116,7 @@
                     <input type="number" id="target-abv" step="0.1" min="0" max="20" placeholder="12">
                 </div>
                 <div class="input-group">
-                    <label for="target-batch-size">Batch Size (gallons):</label>
+                    <label for="target-batch-size" id="target-batch-label">Batch Size (gallons):</label>
                     <input type="number" id="target-batch-size" step="0.1" min="0.1" max="50" value="1" placeholder="1">
                 </div>
                 <div class="input-group">
