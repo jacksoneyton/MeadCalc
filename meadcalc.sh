@@ -1,5 +1,29 @@
 #!/usr/bin/env bash
-source <(curl -s https://raw.githubusercontent.com/community-scripts/ProxmoxVE/main/misc/build.func)
+# Try the correct path for community scripts or provide fallback
+if ! source <(curl -s https://raw.githubusercontent.com/tteck/Proxmox/main/misc/build.func); then
+    # Fallback: define basic functions if the source fails
+    source <(cat << 'BUILDFUNC'
+msg_info() { echo -e "\e[32m[INFO]\e[0m $1"; }
+msg_ok() { echo -e "\e[32m[OK]\e[0m $1"; }  
+msg_error() { echo -e "\e[31m[ERROR]\e[0m $1"; }
+variables() { NEXTID=$(pvesh get /cluster/nextid 2>/dev/null || echo "100"); NSAPP="meadcalc"; }
+color() { YW="\033[33m"; RD="\033[01;31m"; BL="\033[36m"; GN="\033[1;92m"; CL="\033[m"; }
+echo_default() { echo -e "${BL}Using Default Settings${CL}"; }
+catch_errors() { set -eEo pipefail; }
+start() { echo -e "\n🚀 Creating a MeadCalc LXC using the above default settings\n"; }
+build_container() { 
+    pct create $CT_ID local:vztmpl/ubuntu-22.04-standard_22.04-1_amd64.tar.zst \
+        --cores $CORE_COUNT --memory $RAM_SIZE --swap 0 \
+        --hostname $HN --password="" --unprivileged 1 \
+        --rootfs local-lvm:$DISK_SIZE --ostype ubuntu
+    pct start $CT_ID
+}
+description() { pct set $CT_ID -description "# MeadCalc
+Mead brewing calculator with ABV, specific gravity, and ingredient calculations
+Repository: https://github.com/jacksoneyton/MeadCalc"; }
+STD=">/dev/null 2>&1"
+BUILDFUNC
+)
 # Copyright (c) 2021-2024 Jackson Eyton
 # Author: Jackson Eyton (jackson.eyton@gmail.com)
 # License: MIT
@@ -246,6 +270,11 @@ start
 build_container
 description
 
+msg_info "Installing ${APP} inside container"
+pct exec $CT_ID -- bash -c "$(declare -f install_app); install_app"
+msg_ok "Installation completed"
+
 msg_ok "Completed Successfully!\n"
+IP=$(pct exec $CT_ID -- hostname -I | awk '{print $1}' 2>/dev/null || echo "Container IP")
 echo -e "${APP} should be reachable by going to the following URL.
          ${BL}http://${IP}${CL} \n"
