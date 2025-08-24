@@ -474,7 +474,10 @@ function calculateSG() {
         // Display in user's preferred units
         const honeyDisplayWeight = convertLbsToDisplayWeight(honeyAmountLbs);
         const weightUnit = currentWeightUnit === 'imperial' ? 'lbs' : 'kg';
-        ingredientsList.push(`${honeyDisplayWeight.toFixed(2)} ${weightUnit} honey (${honeySugar.toFixed(2)} lbs fermentable sugar)`);
+        const honeySugarDisplay = currentWeightUnit === 'imperial' ? 
+            `${honeySugar.toFixed(2)} lbs fermentable sugar` : 
+            `${(honeySugar * LBS_TO_KG).toFixed(2)} kg fermentable sugar`;
+        ingredientsList.push(`${honeyDisplayWeight.toFixed(2)} ${weightUnit} honey (${honeySugarDisplay})`);
     }
     
     // Calculate sugar from fruit/sweetener
@@ -485,7 +488,10 @@ function calculateSG() {
         // Display in user's preferred units
         const fruitDisplayWeight = convertLbsToDisplayWeight(fruitAmountLbs);
         const weightUnit = currentWeightUnit === 'imperial' ? 'lbs' : 'kg';
-        ingredientsList.push(`${fruitDisplayWeight.toFixed(2)} ${weightUnit} ${ingredients[fruitType].name} (${fruitSugar.toFixed(2)} lbs fermentable sugar)`);
+        const fruitSugarDisplay = currentWeightUnit === 'imperial' ? 
+            `${fruitSugar.toFixed(2)} lbs fermentable sugar` : 
+            `${(fruitSugar * LBS_TO_KG).toFixed(2)} kg fermentable sugar`;
+        ingredientsList.push(`${fruitDisplayWeight.toFixed(2)} ${weightUnit} ${ingredients[fruitType].name} (${fruitSugarDisplay})`);
     }
     
     if (totalFermentableSugar === 0) {
@@ -498,8 +504,18 @@ function calculateSG() {
     const specificGravity = 1.000 + (gravityPoints / 1000);
     const potentialABV = (specificGravity - 1.000) * ABV_FACTOR;
     
-    // Calculate approximate sugar concentration
-    const sugarConcentration = (totalFermentableSugar / batchSizeGallons) * 16; // oz per gallon
+    // Calculate approximate sugar concentration in user's units
+    let sugarConcentration, concentrationUnit;
+    if (currentVolumeUnit === 'imperial') {
+        sugarConcentration = (totalFermentableSugar / batchSizeGallons) * 16; // oz per gallon
+        concentrationUnit = 'oz per gallon';
+    } else {
+        // Convert to grams per liter
+        const totalFermentableSugarKg = totalFermentableSugar * LBS_TO_KG;
+        const batchSizeLiters = batchSizeGallons * GALLONS_TO_LITERS;
+        sugarConcentration = (totalFermentableSugarKg * 1000) / batchSizeLiters; // g per liter
+        concentrationUnit = 'g per liter';
+    }
     
     // Display batch size in user's preferred units
     const batchDisplayVolume = convertGallonsToDisplayVolume(batchSizeGallons);
@@ -511,8 +527,8 @@ function calculateSG() {
             <h3>Results for ${batchDisplayVolume.toFixed(1)} ${batchDisplayVolume === 1 ? volumeUnit : volumeUnitPlural} batch:</h3>
             <p><strong>Estimated Original Gravity:</strong> ${specificGravity.toFixed(3)}</p>
             <p><strong>Potential ABV:</strong> ${potentialABV.toFixed(2)}%</p>
-            <p><strong>Total Fermentable Sugar:</strong> ${totalFermentableSugar.toFixed(2)} lbs</p>
-            <p><strong>Sugar Concentration:</strong> ${sugarConcentration.toFixed(1)} oz per gallon</p>
+            <p><strong>Total Fermentable Sugar:</strong> ${currentWeightUnit === 'imperial' ? totalFermentableSugar.toFixed(2) + ' lbs' : (totalFermentableSugar * LBS_TO_KG).toFixed(2) + ' kg'}</p>
+            <p><strong>Sugar Concentration:</strong> ${sugarConcentration.toFixed(1)} ${concentrationUnit}</p>
             <h4>Ingredients Used:</h4>
             <ul>
                 ${ingredientsList.map(ingredient => `<li>${ingredient}</li>`).join('')}
@@ -622,9 +638,14 @@ function calculateIngredients() {
         return `<li><strong>${displayWeight.toFixed(2)} ${weightUnit} ${ing.name}</strong> (${ing.percentage}% of fermentables)</li>`;
     }).join('');
     
-    // Generate sugar contribution HTML
+    // Generate sugar contribution HTML with proper units
     const sugarContributionHTML = ingredientAmounts.map(ing => {
-        return `<li>${ing.name}: ${ing.sugarContributed.toFixed(2)} lbs fermentable sugar</li>`;
+        if (currentVolumeUnit === 'imperial') {
+            return `<li>${ing.name}: ${ing.sugarContributed.toFixed(2)} lbs fermentable sugar</li>`;
+        } else {
+            const sugarKg = ing.sugarContributed * LBS_TO_KG;
+            return `<li>${ing.name}: ${sugarKg.toFixed(2)} kg fermentable sugar</li>`;
+        }
     }).join('');
     
     const resultHTML = `
