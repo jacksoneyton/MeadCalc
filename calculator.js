@@ -75,6 +75,15 @@ function convertGallonsToDisplayVolume(gallons, unit = currentVolumeUnit) {
     return gallons; // Already in gallons
 }
 
+function displayMetricWeight(kg) {
+    if (kg >= 1) {
+        return `${kg.toFixed(2)} kg`;
+    } else {
+        const grams = kg * 1000;
+        return `${grams.toFixed(0)} g`;
+    }
+}
+
 function getWeightFromInputs(baseId) {
     const mainInput = document.getElementById(baseId);
     const ozInput = document.getElementById(baseId.replace('-amount', '-oz'));
@@ -527,7 +536,7 @@ function calculateSG() {
             <h3>Results for ${batchDisplayVolume.toFixed(1)} ${batchDisplayVolume === 1 ? volumeUnit : volumeUnitPlural} batch:</h3>
             <p><strong>Estimated Original Gravity:</strong> ${specificGravity.toFixed(3)}</p>
             <p><strong>Potential ABV:</strong> ${potentialABV.toFixed(2)}%</p>
-            <p><strong>Total Fermentable Sugar:</strong> ${currentWeightUnit === 'imperial' ? totalFermentableSugar.toFixed(2) + ' lbs' : (totalFermentableSugar * LBS_TO_KG).toFixed(2) + ' kg'}</p>
+            <p><strong>Total Fermentable Sugar:</strong> ${currentWeightUnit === 'imperial' ? totalFermentableSugar.toFixed(2) + ' lbs' : displayMetricWeight(totalFermentableSugar * LBS_TO_KG)}</p>
             <p><strong>Sugar Concentration:</strong> ${sugarConcentration.toFixed(1)} ${concentrationUnit}</p>
             <h4>Ingredients Used:</h4>
             <ul>
@@ -644,7 +653,7 @@ function calculateIngredients() {
             return `<li>${ing.name}: ${ing.sugarContributed.toFixed(2)} lbs fermentable sugar</li>`;
         } else {
             const sugarKg = ing.sugarContributed * LBS_TO_KG;
-            return `<li>${ing.name}: ${sugarKg.toFixed(2)} kg fermentable sugar</li>`;
+            return `<li>${ing.name}: ${displayMetricWeight(sugarKg)} fermentable sugar</li>`;
         }
     }).join('');
     
@@ -652,7 +661,7 @@ function calculateIngredients() {
         <div class="success">
             <h3>Recipe for ${targetABV}% ABV in ${batchDisplayVolume.toFixed(1)} ${batchDisplayVolume === 1 ? volumeUnit : volumeUnitPlural} batch:</h3>
             <p><strong>Target Original Gravity:</strong> ${requiredOG.toFixed(3)}</p>
-            <p><strong>Total Fermentable Sugar Needed:</strong> ${currentVolumeUnit === 'imperial' ? totalSugarNeeded.toFixed(2) + ' lbs' : (totalSugarNeeded * LBS_TO_KG).toFixed(2) + ' kg'}</p>
+            <p><strong>Total Fermentable Sugar Needed:</strong> ${currentVolumeUnit === 'imperial' ? totalSugarNeeded.toFixed(2) + ' lbs' : displayMetricWeight(totalSugarNeeded * LBS_TO_KG)}</p>
             <h4>Required Ingredients:</h4>
             <ul>
                 ${ingredientListHTML}
