@@ -652,7 +652,7 @@ function calculateIngredients() {
         <div class="success">
             <h3>Recipe for ${targetABV}% ABV in ${batchDisplayVolume.toFixed(1)} ${batchDisplayVolume === 1 ? volumeUnit : volumeUnitPlural} batch:</h3>
             <p><strong>Target Original Gravity:</strong> ${requiredOG.toFixed(3)}</p>
-            <p><strong>Total Fermentable Sugar Needed:</strong> ${totalSugarNeeded.toFixed(2)} lbs</p>
+            <p><strong>Total Fermentable Sugar Needed:</strong> ${currentVolumeUnit === 'imperial' ? totalSugarNeeded.toFixed(2) + ' lbs' : (totalSugarNeeded * LBS_TO_KG).toFixed(2) + ' kg'}</p>
             <h4>Required Ingredients:</h4>
             <ul>
                 ${ingredientListHTML}
