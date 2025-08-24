@@ -12,7 +12,7 @@ RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
-NC='\033[0m' # No Color
+NC='\033[0m'
 
 # Logging functions
 log_info() { echo -e "${BLUE}[INFO]${NC} $1"; }
@@ -47,7 +47,6 @@ get_next_id() {
     if command -v pvesh >/dev/null 2>&1; then
         next_id=$(pvesh get /cluster/nextid 2>/dev/null || echo "100")
     else
-        # Fallback: find next available ID manually
         for id in {100..999}; do
             if ! pct list | grep -q "^$id "; then
                 next_id=$id
@@ -133,15 +132,15 @@ Mead brewing calculator with ABV, specific gravity, and ingredient calculations.
 Repository: https://github.com/jacksoneyton/MeadCalc
 Deployed: $(date)"
 
-# Install and configure inside container
+# Install dependencies
 log_info "Installing dependencies..."
-pct exec "$CTID" -- bash -c '
-apt-get update >/dev/null 2>&1
-apt-get install -y nginx curl wget >/dev/null 2>&1
-'
+pct exec "$CTID" -- apt-get update >/dev/null 2>&1
+pct exec "$CTID" -- apt-get install -y nginx curl wget >/dev/null 2>&1
 
-log_info "Configuring nginx..."
-pct exec "$CTID" -- bash -c '
+# Configure nginx and install MeadCalc
+log_info "Setting up MeadCalc..."
+pct exec "$CTID" -- bash << 'INSTALL_SCRIPT'
+# Enable nginx
 systemctl enable nginx >/dev/null 2>&1
 
 # Create web directory
@@ -164,7 +163,7 @@ chown -R www-data:www-data /var/www/meadcalc
 chmod -R 755 /var/www/meadcalc
 
 # Create nginx configuration
-cat > /etc/nginx/sites-available/meadcalc << "NGINXCONF"
+cat > /etc/nginx/sites-available/meadcalc << 'NGINXCONF'
 server {
     listen 80 default_server;
     listen [::]:80 default_server;
@@ -173,22 +172,12 @@ server {
     index index.html;
     server_name _;
     
-    # Gzip compression
     gzip on;
     gzip_vary on;
     gzip_min_length 1000;
     gzip_comp_level 6;
-    gzip_types
-        text/plain
-        text/css
-        application/json
-        application/javascript
-        text/xml
-        application/xml
-        application/xml+rss
-        text/javascript;
+    gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
     
-    # Security headers
     add_header X-Frame-Options "SAMEORIGIN" always;
     add_header X-Content-Type-Options "nosniff" always;
     add_header X-XSS-Protection "1; mode=block" always;
@@ -197,21 +186,18 @@ server {
     location / {
         try_files $uri $uri/ /index.html;
         
-        # No cache for HTML files
         location ~* \.html$ {
             expires -1;
             add_header Cache-Control "no-cache, no-store, must-revalidate";
         }
     }
     
-    # Cache static assets
     location ~* \.(css|js|png|jpg|jpeg|gif|ico|svg|webp|woff|woff2|ttf|eot)$ {
         expires 1y;
         add_header Cache-Control "public, immutable";
         access_log off;
     }
     
-    # Health check
     location /health {
         access_log off;
         return 200 "healthy\n";
@@ -229,47 +215,30 @@ nginx -t >/dev/null 2>&1 && systemctl restart nginx
 
 # Clean up
 rm -f /tmp/index.html /tmp/styles.css /tmp/calculator.js /tmp/MeadCalc_logo.png
-'
+INSTALL_SCRIPT
 
-# Create update script inside container
+# Create update script
 log_info "Creating update script..."
-pct exec "$CTID" -- bash -c '
-cat > /usr/local/bin/update-meadcalc << "UPDATESCRIPT"
+pct exec "$CTID" -- bash << 'UPDATE_SCRIPT'
+cat > /usr/local/bin/update-meadcalc << 'UPDATER'
 #!/bin/bash
-# MeadCalc Update Script
-
 echo "🔄 Updating MeadCalc..."
-
-# Backup current installation
-echo "📦 Creating backup..."
 cp -r /var/www/meadcalc /var/www/meadcalc.backup.$(date +%Y%m%d_%H%M%S)
-
-# Download latest version
-echo "⬇️  Downloading latest version..."
 cd /tmp
 wget -q https://raw.githubusercontent.com/jacksoneyton/MeadCalc/master/index.html -O index.html
 wget -q https://raw.githubusercontent.com/jacksoneyton/MeadCalc/master/styles.css -O styles.css
 wget -q https://raw.githubusercontent.com/jacksoneyton/MeadCalc/master/calculator.js -O calculator.js
 wget -q https://raw.githubusercontent.com/jacksoneyton/MeadCalc/master/MeadCalc_logo.png -O MeadCalc_logo.png 2>/dev/null || true
-
-# Install updates
-echo "🚀 Installing updates..."
 cp index.html styles.css calculator.js /var/www/meadcalc/
 [ -f MeadCalc_logo.png ] && cp MeadCalc_logo.png /var/www/meadcalc/
-
 chown -R www-data:www-data /var/www/meadcalc
 chmod -R 755 /var/www/meadcalc
-
 systemctl reload nginx
-
-# Clean up
 rm -f /tmp/index.html /tmp/styles.css /tmp/calculator.js /tmp/MeadCalc_logo.png
-
 echo "✅ Update completed successfully!"
-UPDATESCRIPT
-
+UPDATER
 chmod +x /usr/local/bin/update-meadcalc
-'
+UPDATE_SCRIPT
 
 # Get container IP
 log_info "Getting container IP address..."
@@ -278,7 +247,8 @@ IP=$(pct exec "$CTID" -- hostname -I | awk '{print $1}' 2>/dev/null || echo "Una
 
 # Final cleanup
 log_info "Performing final cleanup..."
-pct exec "$CTID" -- bash -c 'apt-get autoremove -y >/dev/null 2>&1; apt-get autoclean >/dev/null 2>&1'
+pct exec "$CTID" -- apt-get autoremove -y >/dev/null 2>&1
+pct exec "$CTID" -- apt-get autoclean >/dev/null 2>&1
 
 log_success "Deployment completed successfully!"
 echo ""
