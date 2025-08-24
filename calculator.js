@@ -482,11 +482,13 @@ function calculateSG() {
         
         // Display in user's preferred units
         const honeyDisplayWeight = convertLbsToDisplayWeight(honeyAmountLbs);
-        const weightUnit = currentWeightUnit === 'imperial' ? 'lbs' : 'kg';
+        const weightDisplay = currentWeightUnit === 'imperial' ? 
+            `${honeyDisplayWeight.toFixed(2)} lbs` : 
+            displayMetricWeight(honeyDisplayWeight);
         const honeySugarDisplay = currentWeightUnit === 'imperial' ? 
             `${honeySugar.toFixed(2)} lbs fermentable sugar` : 
-            `${(honeySugar * LBS_TO_KG).toFixed(2)} kg fermentable sugar`;
-        ingredientsList.push(`${honeyDisplayWeight.toFixed(2)} ${weightUnit} honey (${honeySugarDisplay})`);
+            `${displayMetricWeight(honeySugar * LBS_TO_KG)} fermentable sugar`;
+        ingredientsList.push(`${weightDisplay} honey (${honeySugarDisplay})`);
     }
     
     // Calculate sugar from fruit/sweetener
@@ -496,11 +498,13 @@ function calculateSG() {
         
         // Display in user's preferred units
         const fruitDisplayWeight = convertLbsToDisplayWeight(fruitAmountLbs);
-        const weightUnit = currentWeightUnit === 'imperial' ? 'lbs' : 'kg';
+        const weightDisplay = currentWeightUnit === 'imperial' ? 
+            `${fruitDisplayWeight.toFixed(2)} lbs` : 
+            displayMetricWeight(fruitDisplayWeight);
         const fruitSugarDisplay = currentWeightUnit === 'imperial' ? 
             `${fruitSugar.toFixed(2)} lbs fermentable sugar` : 
-            `${(fruitSugar * LBS_TO_KG).toFixed(2)} kg fermentable sugar`;
-        ingredientsList.push(`${fruitDisplayWeight.toFixed(2)} ${weightUnit} ${ingredients[fruitType].name} (${fruitSugarDisplay})`);
+            `${displayMetricWeight(fruitSugar * LBS_TO_KG)} fermentable sugar`;
+        ingredientsList.push(`${weightDisplay} ${ingredients[fruitType].name} (${fruitSugarDisplay})`);
     }
     
     if (totalFermentableSugar === 0) {
@@ -644,7 +648,10 @@ function calculateIngredients() {
     // Generate ingredient list HTML
     const ingredientListHTML = ingredientAmounts.map(ing => {
         const displayWeight = convertLbsToDisplayWeight(ing.amountLbs);
-        return `<li><strong>${displayWeight.toFixed(2)} ${weightUnit} ${ing.name}</strong> (${ing.percentage}% of fermentables)</li>`;
+        const weightDisplay = currentWeightUnit === 'imperial' ? 
+            `${displayWeight.toFixed(2)} lbs` : 
+            displayMetricWeight(displayWeight);
+        return `<li><strong>${weightDisplay} ${ing.name}</strong> (${ing.percentage}% of fermentables)</li>`;
     }).join('');
     
     // Generate sugar contribution HTML with proper units
