@@ -1,37 +1,28 @@
 #!/usr/bin/env bash
-# Try the correct path for community scripts or provide fallback
-if ! source <(curl -s https://raw.githubusercontent.com/tteck/Proxmox/main/misc/build.func); then
-    # Fallback: define basic functions if the source fails
-    source <(cat << 'BUILDFUNC'
-msg_info() { echo -e "\e[32m[INFO]\e[0m $1"; }
-msg_ok() { echo -e "\e[32m[OK]\e[0m $1"; }  
-msg_error() { echo -e "\e[31m[ERROR]\e[0m $1"; }
-variables() { NEXTID=$(pvesh get /cluster/nextid 2>/dev/null || echo "100"); NSAPP="meadcalc"; }
-color() { YW="\033[33m"; RD="\033[01;31m"; BL="\033[36m"; GN="\033[1;92m"; CL="\033[m"; }
-echo_default() { echo -e "${BL}Using Default Settings${CL}"; }
-catch_errors() { set -eEo pipefail; }
-start() { echo -e "\n🚀 Creating a MeadCalc LXC using the above default settings\n"; }
-build_container() { 
-    pct create $CT_ID local:vztmpl/ubuntu-22.04-standard_22.04-1_amd64.tar.zst \
-        --cores $CORE_COUNT --memory $RAM_SIZE --swap 0 \
-        --hostname $HN --password="" --unprivileged 1 \
-        --rootfs local-lvm:$DISK_SIZE --ostype ubuntu
-    pct start $CT_ID
-}
-description() { pct set $CT_ID -description "# MeadCalc
-Mead brewing calculator with ABV, specific gravity, and ingredient calculations
-Repository: https://github.com/jacksoneyton/MeadCalc"; }
-STD=">/dev/null 2>&1"
-BUILDFUNC
-)
-# Copyright (c) 2021-2024 Jackson Eyton
+
+# MeadCalc Standalone LXC Deployment Script
 # Author: Jackson Eyton (jackson.eyton@gmail.com)
 # License: MIT
 # https://github.com/jacksoneyton/MeadCalc
 
-function header_info {
+set -euo pipefail
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# Logging functions
+log_info() { echo -e "${BLUE}[INFO]${NC} $1"; }
+log_success() { echo -e "${GREEN}[SUCCESS]${NC} $1"; }
+log_warning() { echo -e "${YELLOW}[WARNING]${NC} $1"; }
+log_error() { echo -e "${RED}[ERROR]${NC} $1"; }
+
+# Header
 clear
-cat <<"EOF"
+cat << 'EOF'
     __  ___               ________      __   
    /  |/  /__  ____ _____/ / ____/___ _/ /___
   / /|_/ / _ \/ __ `/ __  / /   / __ `/ / ___/
@@ -39,63 +30,132 @@ cat <<"EOF"
 /_/  /_/\___/\__,_/\__,_/\____/\__,_/_/\___/  
                                              
 EOF
-}
 
-header_info
-echo -e "Loading..."
+echo -e "${GREEN}MeadCalc LXC Container Deployment${NC}"
+echo "=================================="
+
+# Configuration
 APP="MeadCalc"
-var_disk="4"
-var_cpu="1"
-var_ram="512"
-var_os="ubuntu"
-var_version="22.04"
-variables
-color
-catch_errors
+DISK_SIZE="4"
+CPU_CORES="1"
+RAM_SIZE="512"
+HOSTNAME="meadcalc"
 
-function default_settings() {
-  CT_TYPE="1"
-  PW=""
-  CT_ID=$NEXTID
-  HN=$NSAPP
-  DISK_SIZE="$var_disk"
-  CORE_COUNT="$var_cpu"
-  RAM_SIZE="$var_ram"
-  BRG="vmbr0"
-  NET=dhcp
-  GATE=""
-  APT_CACHER=""
-  APT_CACHER_IP=""
-  DISABLEIP6="no"
-  MTU=""
-  SD=""
-  NS=""
-  MAC=""
-  VLAN=""
-  SSH="no"
-  VERB="no"
-  echo_default
+# Get next available container ID
+get_next_id() {
+    local next_id
+    if command -v pvesh >/dev/null 2>&1; then
+        next_id=$(pvesh get /cluster/nextid 2>/dev/null || echo "100")
+    else
+        # Fallback: find next available ID manually
+        for id in {100..999}; do
+            if ! pct list | grep -q "^$id "; then
+                next_id=$id
+                break
+            fi
+        done
+        next_id=${next_id:-100}
+    fi
+    echo "$next_id"
 }
 
-function update_script() {
-header_info
-if [[ ! -d /var/www/meadcalc ]]; then msg_error "No ${APP} Installation Found!"; exit; fi
-msg_info "Updating ${APP}"
+CTID=$(get_next_id)
 
-# Stop nginx
-systemctl stop nginx
+log_info "Container Configuration:"
+echo "  🆔  Container ID: $CTID"
+echo "  🖥️  OS: Ubuntu 22.04"
+echo "  💾  Disk: ${DISK_SIZE}GB"
+echo "  🧠  CPU: ${CPU_CORES} cores"  
+echo "  🛠️  RAM: ${RAM_SIZE}MB"
+echo "  🏷️  Hostname: $HOSTNAME"
+echo ""
 
-# Backup current files
-cp -r /var/www/meadcalc /var/www/meadcalc.backup.$(date +%Y%m%d_%H%M%S)
+# Check if running on Proxmox
+if ! command -v pct >/dev/null 2>&1; then
+    log_error "This script requires Proxmox VE (pct command not found)"
+    exit 1
+fi
 
-# Download latest files from your repo
+# Check for Ubuntu template
+TEMPLATE="ubuntu-22.04-standard_22.04-1_amd64.tar.zst"
+if ! pveam list local | grep -q "$TEMPLATE"; then
+    log_warning "Ubuntu 22.04 template not found. Downloading..."
+    pveam download local "$TEMPLATE" || {
+        log_error "Failed to download template"
+        exit 1
+    }
+fi
+
+# Create container
+log_info "Creating LXC container..."
+pct create "$CTID" "local:vztmpl/$TEMPLATE" \
+    --hostname "$HOSTNAME" \
+    --cores "$CPU_CORES" \
+    --memory "$RAM_SIZE" \
+    --swap 0 \
+    --rootfs "local-lvm:$DISK_SIZE" \
+    --net0 "name=eth0,bridge=vmbr0,ip=dhcp" \
+    --unprivileged 1 \
+    --features nesting=1 \
+    --ostype ubuntu \
+    --password="" || {
+    log_error "Failed to create container"
+    exit 1
+}
+
+log_success "Container $CTID created"
+
+# Start container
+log_info "Starting container..."
+pct start "$CTID" || {
+    log_error "Failed to start container"
+    exit 1
+}
+
+# Wait for network
+log_info "Waiting for network connectivity..."
+for i in {1..30}; do
+    if pct exec "$CTID" -- ping -c 1 8.8.8.8 >/dev/null 2>&1; then
+        break
+    fi
+    if [ $i -eq 30 ]; then
+        log_error "Network timeout"
+        exit 1
+    fi
+    sleep 2
+done
+
+log_success "Network is ready"
+
+# Set container description
+pct set "$CTID" -description "# MeadCalc
+Mead brewing calculator with ABV, specific gravity, and ingredient calculations.
+Repository: https://github.com/jacksoneyton/MeadCalc
+Deployed: $(date)"
+
+# Install and configure inside container
+log_info "Installing dependencies..."
+pct exec "$CTID" -- bash -c '
+apt-get update >/dev/null 2>&1
+apt-get install -y nginx curl wget >/dev/null 2>&1
+'
+
+log_info "Configuring nginx..."
+pct exec "$CTID" -- bash -c '
+systemctl enable nginx >/dev/null 2>&1
+
+# Create web directory
+mkdir -p /var/www/meadcalc
 cd /tmp
-wget -q https://raw.githubusercontent.com/jacksoneyton/MeadCalc/master/index.html -O index.html
-wget -q https://raw.githubusercontent.com/jacksoneyton/MeadCalc/master/styles.css -O styles.css  
-wget -q https://raw.githubusercontent.com/jacksoneyton/MeadCalc/master/calculator.js -O calculator.js
-wget -q https://raw.githubusercontent.com/jacksoneyton/MeadCalc/master/MeadCalc_logo.png -O MeadCalc_logo.png 2>/dev/null || true
 
-# Copy to web directory
+# Download MeadCalc files
+echo "Downloading MeadCalc files..."
+wget -q https://raw.githubusercontent.com/jacksoneyton/MeadCalc/master/index.html -O index.html
+wget -q https://raw.githubusercontent.com/jacksoneyton/MeadCalc/master/styles.css -O styles.css
+wget -q https://raw.githubusercontent.com/jacksoneyton/MeadCalc/master/calculator.js -O calculator.js
+wget -q https://raw.githubusercontent.com/jacksoneyton/MeadCalc/master/MeadCalc_logo.png -O MeadCalc_logo.png 2>/dev/null || echo "Logo download failed, continuing..."
+
+# Copy files to web directory
 cp index.html styles.css calculator.js /var/www/meadcalc/
 [ -f MeadCalc_logo.png ] && cp MeadCalc_logo.png /var/www/meadcalc/
 
@@ -103,53 +163,8 @@ cp index.html styles.css calculator.js /var/www/meadcalc/
 chown -R www-data:www-data /var/www/meadcalc
 chmod -R 755 /var/www/meadcalc
 
-# Start nginx
-systemctl start nginx
-
-# Clean up
-rm -f /tmp/index.html /tmp/styles.css /tmp/calculator.js /tmp/MeadCalc_logo.png
-
-msg_ok "Updated ${APP}"
-exit
-}
-
-function install_app() {
-  msg_info "Installing Dependencies"
-  $STD apt-get update
-  $STD apt-get install -y curl sudo mc nginx
-  msg_ok "Installed Dependencies"
-
-  msg_info "Setting Up Nginx"
-  systemctl enable nginx
-  msg_ok "Setup Nginx"
-
-  msg_info "Creating ${APP} User"
-  useradd -r -s /bin/bash -d /opt/meadcalc meadcalc
-  mkdir -p /opt/meadcalc
-  chown meadcalc:meadcalc /opt/meadcalc
-  msg_ok "Created ${APP} User"
-
-  msg_info "Installing ${APP}"
-  # Create web directory
-  mkdir -p /var/www/meadcalc
-  cd /tmp
-
-  # Download application files from your GitHub repo
-  wget -q https://raw.githubusercontent.com/jacksoneyton/MeadCalc/master/index.html -O index.html
-  wget -q https://raw.githubusercontent.com/jacksoneyton/MeadCalc/master/styles.css -O styles.css
-  wget -q https://raw.githubusercontent.com/jacksoneyton/MeadCalc/master/calculator.js -O calculator.js
-  wget -q https://raw.githubusercontent.com/jacksoneyton/MeadCalc/master/MeadCalc_logo.png -O MeadCalc_logo.png 2>/dev/null || echo "Logo not found, continuing..."
-
-  # Copy files to web directory
-  cp index.html styles.css calculator.js /var/www/meadcalc/
-  [ -f MeadCalc_logo.png ] && cp MeadCalc_logo.png /var/www/meadcalc/
-
-  # Set permissions
-  chown -R www-data:www-data /var/www/meadcalc
-  chmod -R 755 /var/www/meadcalc
-
-  # Create nginx site configuration
-  cat > /etc/nginx/sites-available/meadcalc << 'EOF'
+# Create nginx configuration
+cat > /etc/nginx/sites-available/meadcalc << "NGINXCONF"
 server {
     listen 80 default_server;
     listen [::]:80 default_server;
@@ -202,44 +217,43 @@ server {
         return 200 "healthy\n";
         add_header Content-Type text/plain;
     }
-    
-    # Block hidden files
-    location ~ /\. {
-        deny all;
-        access_log off;
-        log_not_found off;
-    }
 }
-EOF
+NGINXCONF
 
-  # Enable site
-  ln -sf /etc/nginx/sites-available/meadcalc /etc/nginx/sites-enabled/
-  rm -f /etc/nginx/sites-enabled/default
+# Enable site
+ln -sf /etc/nginx/sites-available/meadcalc /etc/nginx/sites-enabled/
+rm -f /etc/nginx/sites-enabled/default
 
-  # Test nginx config
-  nginx -t
+# Test and restart nginx
+nginx -t >/dev/null 2>&1 && systemctl restart nginx
 
-  # Clean up downloaded files
-  rm -f /tmp/index.html /tmp/styles.css /tmp/calculator.js /tmp/MeadCalc_logo.png
+# Clean up
+rm -f /tmp/index.html /tmp/styles.css /tmp/calculator.js /tmp/MeadCalc_logo.png
+'
 
-  msg_ok "Installed ${APP}"
-
-  msg_info "Creating Update Script"
-  cat > /usr/local/bin/update-meadcalc << 'UPDATEEOF'
+# Create update script inside container
+log_info "Creating update script..."
+pct exec "$CTID" -- bash -c '
+cat > /usr/local/bin/update-meadcalc << "UPDATESCRIPT"
 #!/bin/bash
 # MeadCalc Update Script
 
-echo "Backing up current files..."
+echo "🔄 Updating MeadCalc..."
+
+# Backup current installation
+echo "📦 Creating backup..."
 cp -r /var/www/meadcalc /var/www/meadcalc.backup.$(date +%Y%m%d_%H%M%S)
 
-echo "Downloading latest version..."
+# Download latest version
+echo "⬇️  Downloading latest version..."
 cd /tmp
 wget -q https://raw.githubusercontent.com/jacksoneyton/MeadCalc/master/index.html -O index.html
 wget -q https://raw.githubusercontent.com/jacksoneyton/MeadCalc/master/styles.css -O styles.css
 wget -q https://raw.githubusercontent.com/jacksoneyton/MeadCalc/master/calculator.js -O calculator.js
 wget -q https://raw.githubusercontent.com/jacksoneyton/MeadCalc/master/MeadCalc_logo.png -O MeadCalc_logo.png 2>/dev/null || true
 
-echo "Installing updates..."
+# Install updates
+echo "🚀 Installing updates..."
 cp index.html styles.css calculator.js /var/www/meadcalc/
 [ -f MeadCalc_logo.png ] && cp MeadCalc_logo.png /var/www/meadcalc/
 
@@ -248,33 +262,37 @@ chmod -R 755 /var/www/meadcalc
 
 systemctl reload nginx
 
+# Clean up
 rm -f /tmp/index.html /tmp/styles.css /tmp/calculator.js /tmp/MeadCalc_logo.png
 
-echo "Update complete! Visit http://$(hostname -I | awk '{print $1}') to see changes."
-UPDATEEOF
+echo "✅ Update completed successfully!"
+UPDATESCRIPT
 
-  chmod +x /usr/local/bin/update-meadcalc
-  msg_ok "Created Update Script"
+chmod +x /usr/local/bin/update-meadcalc
+'
 
-  msg_info "Starting Services"
-  systemctl restart nginx
-  msg_ok "Started Services"
+# Get container IP
+log_info "Getting container IP address..."
+sleep 3
+IP=$(pct exec "$CTID" -- hostname -I | awk '{print $1}' 2>/dev/null || echo "Unable to get IP")
 
-  msg_info "Cleaning Up"
-  $STD apt-get autoremove
-  $STD apt-get autoclean
-  msg_ok "Cleaned"
-}
+# Final cleanup
+log_info "Performing final cleanup..."
+pct exec "$CTID" -- bash -c 'apt-get autoremove -y >/dev/null 2>&1; apt-get autoclean >/dev/null 2>&1'
 
-start
-build_container
-description
-
-msg_info "Installing ${APP} inside container"
-pct exec $CT_ID -- bash -c "$(declare -f install_app); install_app"
-msg_ok "Installation completed"
-
-msg_ok "Completed Successfully!\n"
-IP=$(pct exec $CT_ID -- hostname -I | awk '{print $1}' 2>/dev/null || echo "Container IP")
-echo -e "${APP} should be reachable by going to the following URL.
-         ${BL}http://${IP}${CL} \n"
+log_success "Deployment completed successfully!"
+echo ""
+echo "🌐 Your MeadCalc installation is ready!"
+echo "   URL: http://$IP"
+echo ""
+echo "📋 Container Details:"
+echo "   Container ID: $CTID" 
+echo "   Hostname: $HOSTNAME"
+echo "   IP Address: $IP"
+echo ""
+echo "🔧 Management Commands:"
+echo "   Start:   pct start $CTID"
+echo "   Stop:    pct stop $CTID"
+echo "   Console: pct enter $CTID"
+echo "   Update:  pct exec $CTID -- /usr/local/bin/update-meadcalc"
+echo ""
