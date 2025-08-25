@@ -362,6 +362,140 @@ echo "   sudo systemctl reload nginx"
 echo ""
 UPDATER
 chmod +x /usr/local/bin/update-meadcalc
+
+# Create meadcalc CLI command
+cat > /usr/local/bin/meadcalc << 'MEADCALC_CLI'
+#!/bin/bash
+
+# MeadCalc CLI Tool
+# Provides convenient commands for managing MeadCalc
+
+set -euo pipefail
+
+# Colors for output
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+YELLOW='\033[1;33m'
+RED='\033[0;31m'
+NC='\033[0m'
+
+show_help() {
+    echo "MeadCalc CLI Tool"
+    echo "=================="
+    echo ""
+    echo "Usage: meadcalc <command>"
+    echo ""
+    echo "Commands:"
+    echo "  update      Update MeadCalc to the latest version from GitHub"
+    echo "  status      Show MeadCalc service status and information"
+    echo "  logs        Show nginx access logs for MeadCalc"
+    echo "  backup      Create a manual backup of MeadCalc"
+    echo "  help        Show this help message"
+    echo ""
+    echo "Examples:"
+    echo "  meadcalc update    # Update to latest version"
+    echo "  meadcalc status    # Check if MeadCalc is running"
+    echo "  meadcalc logs      # View recent access logs"
+    echo ""
+}
+
+show_status() {
+    echo -e "${BLUE}MeadCalc Status${NC}"
+    echo "==============="
+    echo ""
+    
+    # Check nginx status
+    if systemctl is-active nginx >/dev/null 2>&1; then
+        echo -e "Nginx: ${GREEN}Running${NC}"
+    else
+        echo -e "Nginx: ${RED}Stopped${NC}"
+    fi
+    
+    # Check if MeadCalc files exist
+    if [ -f "/var/www/meadcalc/index.html" ]; then
+        echo -e "MeadCalc Files: ${GREEN}Present${NC}"
+    else
+        echo -e "MeadCalc Files: ${RED}Missing${NC}"
+    fi
+    
+    # Show web directory info
+    if [ -d "/var/www/meadcalc" ]; then
+        echo "Web Directory: /var/www/meadcalc"
+        echo "Directory Size: $(du -sh /var/www/meadcalc | cut -f1)"
+        echo "Last Modified: $(stat -c %y /var/www/meadcalc/index.html 2>/dev/null | cut -d'.' -f1 || echo 'Unknown')"
+    fi
+    
+    # Show IP address
+    IP=$(hostname -I | awk '{print $1}' 2>/dev/null || echo "Unable to get IP")
+    echo "Server IP: $IP"
+    echo "MeadCalc URL: http://$IP"
+    echo ""
+}
+
+show_logs() {
+    echo -e "${BLUE}MeadCalc Access Logs (Last 20 entries)${NC}"
+    echo "======================================="
+    echo ""
+    if [ -f "/var/log/nginx/access.log" ]; then
+        tail -20 /var/log/nginx/access.log
+    else
+        echo "No nginx access logs found"
+    fi
+}
+
+create_backup() {
+    echo -e "${BLUE}Creating MeadCalc Backup${NC}"
+    echo "========================"
+    echo ""
+    
+    BACKUP_DIR="/var/www/meadcalc-backups"
+    mkdir -p "$BACKUP_DIR"
+    
+    BACKUP_NAME="meadcalc-manual-backup-$(date +%Y%m%d-%H%M%S)"
+    BACKUP_PATH="$BACKUP_DIR/$BACKUP_NAME"
+    
+    if [ -d "/var/www/meadcalc" ]; then
+        cp -r /var/www/meadcalc "$BACKUP_PATH"
+        echo -e "${GREEN}Backup created successfully!${NC}"
+        echo "Location: $BACKUP_PATH"
+        echo ""
+    else
+        echo -e "${RED}Error: MeadCalc directory not found${NC}"
+        exit 1
+    fi
+}
+
+# Main command handling
+case "${1:-help}" in
+    "update")
+        if [ -f "/usr/local/bin/update-meadcalc" ]; then
+            /usr/local/bin/update-meadcalc
+        else
+            echo -e "${RED}Error: update-meadcalc script not found${NC}"
+            exit 1
+        fi
+        ;;
+    "status")
+        show_status
+        ;;
+    "logs")
+        show_logs
+        ;;
+    "backup")
+        create_backup
+        ;;
+    "help"|"--help"|"-h")
+        show_help
+        ;;
+    *)
+        echo -e "${RED}Error: Unknown command '$1'${NC}"
+        echo ""
+        show_help
+        exit 1
+        ;;
+esac
+MEADCALC_CLI
+chmod +x /usr/local/bin/meadcalc
 UPDATE_SCRIPT
 
 # Get container IP
@@ -385,8 +519,17 @@ echo "   Hostname: $HOSTNAME"
 echo "   IP Address: $IP"
 echo ""
 echo "🔧 Management Commands:"
-echo "   Start:   pct start $CTID"
-echo "   Stop:    pct stop $CTID"
-echo "   Console: pct enter $CTID"
-echo "   Update:  pct exec $CTID -- /usr/local/bin/update-meadcalc"
+echo "   Start:    pct start $CTID"
+echo "   Stop:     pct stop $CTID"
+echo "   Console:  pct enter $CTID"
+echo ""
+echo "📱 MeadCalc CLI Commands (from within container):"
+echo "   meadcalc update    # Update to latest version"
+echo "   meadcalc status    # Show service status and info"
+echo "   meadcalc logs      # View access logs"
+echo "   meadcalc backup    # Create manual backup"
+echo "   meadcalc help      # Show all commands"
+echo ""
+echo "🔄 Quick Update (from Proxmox host):"
+echo "   pct exec $CTID -- meadcalc update"
 echo ""
