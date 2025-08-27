@@ -912,47 +912,45 @@ function validateConversionInput(value, unit) {
 function calculateAllConversions(inputValue, fromUnit) {
     let sg, brix, baume, abv, abw;
     
-    // First convert everything to Specific Gravity as the base
-    switch(fromUnit) {
-        case 'sg':
-            sg = inputValue;
-            break;
-        case 'brix':
-            // BRIX to SG: SG = (BRIX / (258.6 - ((BRIX / 258.2) * 227.1))) + 1
-            sg = (inputValue / (258.6 - ((inputValue / 258.2) * 227.1))) + 1;
-            break;
-        case 'baume':
-            // Baumé to SG: SG = 145 / (145 - Baumé)
-            sg = 145 / (145 - inputValue);
-            break;
-        case 'abv':
-            // ABV to SG (approximate): SG ≈ 1 + (ABV / 131.25 / 1000)
-            sg = 1 + (inputValue / ABV_FACTOR / 1000);
-            break;
-        case 'abw':
-            // ABW to ABV first: ABV = ABW * (density of water / density of alcohol)
-            abv = inputValue * (CONVERSION_CONSTANTS.WATER_DENSITY / CONVERSION_CONSTANTS.ALCOHOL_DENSITY);
-            sg = 1 + (abv / ABV_FACTOR / 1000);
-            break;
+    // Handle direct ABV/ABW conversions first (most accurate)
+    if (fromUnit === 'abv') {
+        abv = inputValue;
+        abw = abv * (CONVERSION_CONSTANTS.ALCOHOL_DENSITY / CONVERSION_CONSTANTS.WATER_DENSITY);
+        // Convert ABV to SG for other conversions (approximate)
+        sg = 1 + (abv / ABV_FACTOR / 1000);
+    } else if (fromUnit === 'abw') {
+        abw = inputValue;
+        abv = abw * (CONVERSION_CONSTANTS.WATER_DENSITY / CONVERSION_CONSTANTS.ALCOHOL_DENSITY);
+        // Convert ABV to SG for other conversions (approximate)
+        sg = 1 + (abv / ABV_FACTOR / 1000);
+    } else {
+        // For gravity-based units, convert to SG first
+        switch(fromUnit) {
+            case 'sg':
+                sg = inputValue;
+                break;
+            case 'brix':
+                // BRIX to SG: SG = (BRIX / (258.6 - ((BRIX / 258.2) * 227.1))) + 1
+                sg = (inputValue / (258.6 - ((inputValue / 258.2) * 227.1))) + 1;
+                break;
+            case 'baume':
+                // Baumé to SG: SG = 145 / (145 - Baumé)
+                sg = 145 / (145 - inputValue);
+                break;
+        }
+        
+        // Convert SG to ABV and ABW (approximate for fermented beverages)
+        abv = (sg - 1.000) * ABV_FACTOR;
+        abw = abv * (CONVERSION_CONSTANTS.ALCOHOL_DENSITY / CONVERSION_CONSTANTS.WATER_DENSITY);
     }
     
-    // Now convert SG to all other units
+    // Calculate remaining gravity units from SG
     if (sg) {
         // SG to BRIX: BRIX = (((182.4601 * SG - 775.6821) * SG + 1262.7794) * SG - 669.5622)
         brix = (((182.4601 * sg - 775.6821) * sg + 1262.7794) * sg - 669.5622);
         
         // SG to Baumé: Baumé = 145 - (145 / SG)
         baume = 145 - (145 / sg);
-        
-        // SG to ABV: ABV = (SG - 1.000) * ABV_FACTOR
-        if (fromUnit !== 'abv') {
-            abv = (sg - 1.000) * ABV_FACTOR;
-        } else {
-            abv = inputValue;
-        }
-        
-        // ABV to ABW: ABW = ABV * (density of alcohol / density of water)
-        abw = abv * (CONVERSION_CONSTANTS.ALCOHOL_DENSITY / CONVERSION_CONSTANTS.WATER_DENSITY);
     }
     
     return {
