@@ -793,3 +793,156 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+// Conversion Utility Functions
+
+// Conversion constants and formulas
+const CONVERSION_CONSTANTS = {
+    // Alcohol density at 20°C (g/mL)
+    ALCOHOL_DENSITY: 0.789,
+    // Water density at 20°C (g/mL)
+    WATER_DENSITY: 1.000
+};
+
+// Convert between different gravity and alcohol measurement standards
+function performConversion() {
+    const inputValue = parseFloat(document.getElementById('conversion-input').value);
+    const fromUnit = document.getElementById('conversion-from').value;
+    
+    if (isNaN(inputValue) || inputValue <= 0) {
+        document.getElementById('conversion-result').innerHTML = 
+            '<div class="warning">Please enter a valid positive number</div>';
+        return;
+    }
+    
+    // Validate input ranges
+    if (!validateConversionInput(inputValue, fromUnit)) {
+        return;
+    }
+    
+    // Perform conversions
+    const results = calculateAllConversions(inputValue, fromUnit);
+    
+    // Display results
+    displayConversionResults(results, fromUnit);
+}
+
+function validateConversionInput(value, unit) {
+    const resultDiv = document.getElementById('conversion-result');
+    
+    switch(unit) {
+        case 'abv':
+        case 'abw':
+            if (value < 0 || value > 25) {
+                resultDiv.innerHTML = '<div class="warning">Alcohol percentage should be between 0% and 25%</div>';
+                return false;
+            }
+            break;
+        case 'sg':
+            if (value < 0.990 || value > 1.200) {
+                resultDiv.innerHTML = '<div class="warning">Specific Gravity should be between 0.990 and 1.200</div>';
+                return false;
+            }
+            break;
+        case 'brix':
+            if (value < 0 || value > 50) {
+                resultDiv.innerHTML = '<div class="warning">BRIX should be between 0° and 50°</div>';
+                return false;
+            }
+            break;
+        case 'baume':
+            if (value < 0 || value > 25) {
+                resultDiv.innerHTML = '<div class="warning">Baumé should be between 0° and 25°</div>';
+                return false;
+            }
+            break;
+    }
+    return true;
+}
+
+function calculateAllConversions(inputValue, fromUnit) {
+    let sg, brix, baume, abv, abw;
+    
+    // First convert everything to Specific Gravity as the base
+    switch(fromUnit) {
+        case 'sg':
+            sg = inputValue;
+            break;
+        case 'brix':
+            // BRIX to SG: SG = (BRIX / (258.6 - ((BRIX / 258.2) * 227.1))) + 1
+            sg = (inputValue / (258.6 - ((inputValue / 258.2) * 227.1))) + 1;
+            break;
+        case 'baume':
+            // Baumé to SG: SG = 145 / (145 - Baumé)
+            sg = 145 / (145 - inputValue);
+            break;
+        case 'abv':
+            // ABV to SG (approximate): SG ≈ 1 + (ABV / 131.25 / 1000)
+            sg = 1 + (inputValue / ABV_FACTOR / 1000);
+            break;
+        case 'abw':
+            // ABW to ABV first: ABV = ABW * (density of water / density of alcohol)
+            abv = inputValue * (CONVERSION_CONSTANTS.WATER_DENSITY / CONVERSION_CONSTANTS.ALCOHOL_DENSITY);
+            sg = 1 + (abv / ABV_FACTOR / 1000);
+            break;
+    }
+    
+    // Now convert SG to all other units
+    if (sg) {
+        // SG to BRIX: BRIX = (((182.4601 * SG - 775.6821) * SG + 1262.7794) * SG - 669.5622)
+        brix = (((182.4601 * sg - 775.6821) * sg + 1262.7794) * sg - 669.5622);
+        
+        // SG to Baumé: Baumé = 145 - (145 / SG)
+        baume = 145 - (145 / sg);
+        
+        // SG to ABV: ABV = (SG - 1.000) * ABV_FACTOR
+        if (fromUnit !== 'abv') {
+            abv = (sg - 1.000) * ABV_FACTOR;
+        } else {
+            abv = inputValue;
+        }
+        
+        // ABV to ABW: ABW = ABV * (density of alcohol / density of water)
+        abw = abv * (CONVERSION_CONSTANTS.ALCOHOL_DENSITY / CONVERSION_CONSTANTS.WATER_DENSITY);
+    }
+    
+    return {
+        sg: sg,
+        brix: brix,
+        baume: baume,
+        abv: abv,
+        abw: abw
+    };
+}
+
+function displayConversionResults(results, fromUnit) {
+    const resultDiv = document.getElementById('conversion-result');
+    
+    let html = '<div class="success"><h3>Conversion Results</h3><div class="conversion-grid">';
+    
+    // Create grid of results, highlighting the input value
+    const conversions = [
+        { key: 'abv', label: 'ABV', value: results.abv, unit: '%', precision: 2 },
+        { key: 'abw', label: 'ABW', value: results.abw, unit: '%', precision: 2 },
+        { key: 'sg', label: 'Specific Gravity', value: results.sg, unit: '', precision: 3 },
+        { key: 'brix', label: 'BRIX', value: results.brix, unit: '°Bx', precision: 1 },
+        { key: 'baume', label: 'Baumé', value: results.baume, unit: '°Bé', precision: 1 }
+    ];
+    
+    conversions.forEach(conv => {
+        const isSource = conv.key === fromUnit;
+        const cssClass = isSource ? 'conversion-source' : 'conversion-result';
+        
+        html += `
+            <div class="conversion-item ${cssClass}">
+                <div class="conversion-label">${conv.label}${isSource ? ' (Input)' : ''}</div>
+                <div class="conversion-value">
+                    ${conv.value.toFixed(conv.precision)}${conv.unit}
+                </div>
+            </div>
+        `;
+    });
+    
+    html += '</div></div>';
+    resultDiv.innerHTML = html;
+}

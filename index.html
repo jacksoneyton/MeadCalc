@@ -207,6 +207,39 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Conversion Utilities -->
+            <div class="calculator-section">
+                <h2>🔄 Conversion Utilities</h2>
+                
+                <div class="calculator-card">
+                    <h3>Alcohol & Gravity Converter</h3>
+                    <p class="description">Convert between different alcohol and gravity measurement standards</p>
+                    
+                    <div class="input-section">
+                        <h4>Input Value</h4>
+                        <div class="input-group">
+                            <label for="conversion-input">Value:</label>
+                            <input type="number" id="conversion-input" step="0.001" placeholder="Enter value">
+                        </div>
+                        
+                        <div class="input-group">
+                            <label for="conversion-from">Convert From:</label>
+                            <select id="conversion-from">
+                                <option value="abv">ABV (%)</option>
+                                <option value="abw">ABW (%)</option>
+                                <option value="sg">Specific Gravity (SG)</option>
+                                <option value="brix">BRIX (°Bx)</option>
+                                <option value="baume">Baumé (°Bé)</option>
+                            </select>
+                        </div>
+                        
+                        <button onclick="performConversion()" class="calculate-btn">Convert</button>
+                    </div>
+                    
+                    <div id="conversion-result" class="result"></div>
+                </div>
+            </div>
         </div>
     </div>
 
