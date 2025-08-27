@@ -792,7 +792,30 @@ document.addEventListener('DOMContentLoaded', function() {
             input.addEventListener('change', calculateIngredientsRealTime);
         }
     });
+    
+    // Add double-click select all functionality to all input fields
+    addSelectAllOnDoubleClick();
 });
+
+// Function to add select-all-on-double-click to all input fields
+function addSelectAllOnDoubleClick() {
+    // Get all input elements of type number and text
+    const inputs = document.querySelectorAll('input[type="number"], input[type="text"]');
+    
+    inputs.forEach(input => {
+        // Add double-click event listener for select all
+        input.addEventListener('dblclick', function() {
+            this.select();
+        });
+        
+        // Prevent default double-click behavior that might interfere
+        input.addEventListener('mousedown', function(e) {
+            if (e.detail === 2) { // Double-click
+                e.preventDefault();
+            }
+        });
+    });
+}
 
 // Conversion Utility Functions
 
