@@ -795,6 +795,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Add double-click select all functionality to all input fields
     addSelectAllOnDoubleClick();
+    
+    // Add event listeners for conversion utility live updates
+    addConversionEventListeners();
 });
 
 // Function to add select-all-on-double-click to all input fields
@@ -817,6 +820,21 @@ function addSelectAllOnDoubleClick() {
     });
 }
 
+// Function to add event listeners for conversion utility live updates
+function addConversionEventListeners() {
+    const conversionInput = document.getElementById('conversion-input');
+    const conversionFrom = document.getElementById('conversion-from');
+    
+    if (conversionInput && conversionFrom) {
+        // Add input event listener for live updates as user types
+        conversionInput.addEventListener('input', performConversion);
+        conversionInput.addEventListener('change', performConversion);
+        
+        // Add change event listener for dropdown changes
+        conversionFrom.addEventListener('change', performConversion);
+    }
+}
+
 // Conversion Utility Functions
 
 // Conversion constants and formulas
@@ -829,12 +847,20 @@ const CONVERSION_CONSTANTS = {
 
 // Convert between different gravity and alcohol measurement standards
 function performConversion() {
-    const inputValue = parseFloat(document.getElementById('conversion-input').value);
+    const inputElement = document.getElementById('conversion-input');
+    const inputValue = parseFloat(inputElement.value);
     const fromUnit = document.getElementById('conversion-from').value;
     
-    if (isNaN(inputValue) || inputValue <= 0) {
+    // Clear results if input is empty or invalid
+    if (!inputElement.value.trim() || isNaN(inputValue)) {
         document.getElementById('conversion-result').innerHTML = 
-            '<div class="warning">Please enter a valid positive number</div>';
+            '<div class="info">Enter a value to see conversions</div>';
+        return;
+    }
+    
+    if (inputValue <= 0) {
+        document.getElementById('conversion-result').innerHTML = 
+            '<div class="warning">Please enter a positive number</div>';
         return;
     }
     
