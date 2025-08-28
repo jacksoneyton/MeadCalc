@@ -1,24 +1,35 @@
 # MeadCalc - Future Feature Ideas
 
+## Recently Completed Features ✅
+
+### v2024.1 - Alcohol & Gravity Conversion System
+- ✅ **Alcohol & Gravity Converter**: Professional conversion utility supporting ABV, ABW, SG, BRIX, and Baumé
+- ✅ **Industry-Standard Formulas**: Accurate conversion using Got Mead calculator formulas for SG↔BRIX
+- ✅ **Live Conversion**: Real-time updates as user types with input validation
+- ✅ **Smart Unit Display**: Imperial (lbs/oz) and metric (kg/g) with intelligent formatting
+- ✅ **Double-Click Select**: Enhanced UX for easy input field value selection
+- ✅ **CLI Management**: Complete `meadcalc` command system (update/status/logs/backup)
+- ✅ **LXC Deployment**: Full Proxmox containerization with automated updates
+
 ## Competitive Analysis & Feature Gaps
 
 Based on analysis of professional mead calculators like Got Mead's comprehensive calculator, MeadCalc can be enhanced with the following advanced features to provide professional-grade brewing calculations:
 
 ### Key Missing Features (Compared to Got Mead Calculator)
 - **Multi-scenario must calculations** (new must with fixed gravity/volume, adding to existing)
-- **BRIX and Baume gravity scales** (currently only supports SG)
+- ~~**BRIX and Baume gravity scales** (currently only supports SG)~~ ✅ **COMPLETED**
 - **Professional blending calculator** with missing value determination
 - **Comprehensive sugar source database** (50+ options vs current 25+)
 - **Multiple addition support** (4-5 different fruits/sugars per batch)
 - **Temperature coefficient calculations** for accurate readings
-- **Alcohol conversion utilities** between different measurement standards
+- ~~**Alcohol conversion utilities** between different measurement standards~~ ✅ **COMPLETED**
 
-### Competitive Advantages to Maintain
-- **Smart unit display** with automatic metric/imperial formatting
-- **Modern responsive design** optimized for mobile devices
-- **Professional deployment system** with LXC containerization
-- **Built-in CLI management tools** for easy updates and maintenance
-- **Clean, intuitive interface** focused on ease of use
+### Competitive Advantages Achieved ✅
+- ~~**Smart unit display** with automatic metric/imperial formatting~~ ✅ **COMPLETED** - Imperial (lbs/oz) and metric (kg/g) with intelligent display
+- ~~**Modern responsive design** optimized for mobile devices~~ ✅ **COMPLETED** - Responsive across desktop, tablet, mobile
+- ~~**Professional deployment system** with LXC containerization~~ ✅ **COMPLETED** - Full Proxmox LXC deployment
+- ~~**Built-in CLI management tools** for easy updates and maintenance~~ ✅ **COMPLETED** - `meadcalc` CLI with update/status/logs/backup
+- ~~**Clean, intuitive interface** focused on ease of use~~ ✅ **COMPLETED** - Consistent styling with real-time calculations
 
 ## Additional Considerations for Future Development
 
@@ -79,9 +90,9 @@ Based on analysis of professional mead calculators like Got Mead's comprehensive
   - Support for 50+ sugar sources and fruits
   - Multiple addition calculator (up to 4-5 different additions per batch)
   - Automatic sugar content conversion and quantity calculations
-- **Alcohol conversion utility**
-  - Convert between ABV, ABW, SG, BRIX, and Baume
-  - Temperature coefficient calculations for accurate readings
+- ~~**Alcohol conversion utility**~~ ✅ **COMPLETED**
+  - ~~Convert between ABV, ABW, SG, BRIX, and Baume~~ ✅ **COMPLETED** - Live conversion with industry-standard formulas
+  - **Temperature coefficient calculations** for accurate readings
 - **Gravity and volume relationship calculator**
   - Target gravity achievement through volume adjustment
   - Target volume achievement through gravity adjustment
@@ -96,18 +107,18 @@ Based on analysis of professional mead calculators like Got Mead's comprehensive
 
 ### 8. Enhanced Unit System & Calculations
 - **Comprehensive measurement support**
-  - Full metric, US customary, and Imperial unit systems
-  - BRIX, Baume, and additional gravity scales
-  - Temperature-corrected calculations (Celsius/Fahrenheit)
+  - ~~Full metric, US customary, and Imperial unit systems~~ ✅ **PARTIALLY COMPLETED** - Imperial/metric with smart display
+  - ~~BRIX, Baume, and additional gravity scales~~ ✅ **COMPLETED** - Full support in conversion utility
+  - **Temperature-corrected calculations** (Celsius/Fahrenheit)
 - **Professional must analysis**
-  - Multiple calculation scenarios in single interface
-  - Batch composition analysis and recommendations
-  - Real-time unit conversion across all measurement systems
+  - **Multiple calculation scenarios** in single interface
+  - **Batch composition analysis and recommendations**
+  - ~~Real-time unit conversion across all measurement systems~~ ✅ **COMPLETED** - Live conversion utility
 - **Advanced fruit and sugar database**
-  - Expand current 25+ ingredients to 50+ options
-  - Include exotic fruits and specialty sugars
-  - Detailed sugar content profiles and brewing characteristics
-  - Regional availability and seasonal recommendations
+  - **Expand current 25+ ingredients to 50+ options**
+  - **Include exotic fruits and specialty sugars**
+  - ~~Detailed sugar content profiles and brewing characteristics~~ ✅ **COMPLETED** - Accurate percentages implemented
+  - **Regional availability and seasonal recommendations**
 
 ### 9. Educational Resources
 - **Troubleshooting guide** for common issues
@@ -133,20 +144,20 @@ Based on analysis of professional mead calculators like Got Mead's comprehensive
 ## Implementation Priority Suggestions
 
 ### Phase 1 (High Impact, Low Complexity)
-1. Enhanced fruit and sugar database (expand to 50+ ingredients)
-2. BRIX and Baume gravity scale support
-3. Temperature correction for readings
-4. Multiple sugar/fruit addition calculator (up to 4-5 additions)
-5. Batch scaling tools
-6. Recipe save/load functionality
+1. **Enhanced fruit and sugar database** (expand to 50+ ingredients)
+2. ~~BRIX and Baume gravity scale support~~ ✅ **COMPLETED**
+3. **Temperature correction for readings**
+4. **Multiple sugar/fruit addition calculator** (up to 4-5 additions)
+5. **Batch scaling tools**
+6. **Recipe save/load functionality**
 
 ### Phase 2 (Medium Impact, Medium Complexity)
-1. Multi-scenario must calculator (fixed gravity/volume, adding to existing)
-2. Alcohol conversion utility (ABV/ABW/SG/BRIX/Baume)
-3. Gravity and volume relationship calculator
-4. Nutrient calculator (basic DAP/Fermaid)
-5. Fermentation timeline tracker
-6. Yeast strain recommendations
+1. **Multi-scenario must calculator** (fixed gravity/volume, adding to existing)
+2. ~~Alcohol conversion utility (ABV/ABW/SG/BRIX/Baume)~~ ✅ **COMPLETED**
+3. **Gravity and volume relationship calculator**
+4. **Nutrient calculator** (basic DAP/Fermaid)
+5. **Fermentation timeline tracker**
+6. **Yeast strain recommendations**
 
 ### Phase 3 (High Impact, High Complexity)
 1. Advanced blending calculator with missing value calculation
