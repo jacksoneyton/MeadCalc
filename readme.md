@@ -1,6 +1,6 @@
 # 🍯 MeadCalc
 
-MeadCalc is a comprehensive, browser-based **mead brewing calculator** with smart unit conversion and professional deployment tools. It helps brewers calculate sugar additions for desired alcohol content, batch size, and sweetness level with support for both imperial and metric measurements.
+MeadCalc is a comprehensive, browser-based **mead brewing calculator** with smart unit conversion. It helps brewers calculate sugar additions for desired alcohol content, batch size, and sweetness level with support for both imperial and metric measurements.
 
 **🌐 [Try MeadCalc](http://meadcalc.ddns.net)**
 
