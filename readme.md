@@ -4,14 +4,38 @@ MeadCalc is a comprehensive, browser-based **mead brewing calculator** with smar
 
 **🌐 [Try MeadCalc](http://meadcalc.ddns.net)**
 
+![MeadCalc Screenshot](MeadCalc_ScreenShot.png)
+
 ## ✨ Features
 
-- 📊 **Dual Calculator System**: Basic calculator for existing recipes and Target ABV calculator for recipe design
-- 🌍 **Smart Unit Display**: Automatic conversion between imperial (lbs/oz) and metric (kg/g) with intelligent formatting
-- 🔧 **Professional CLI Tools**: Built-in `meadcalc` command for easy management
-- 🔄 **Automated Updates**: One-command updates with automatic backups
-- 🐳 **LXC Deployment**: Complete Proxmox container deployment with nginx
-- 🎯 **Responsive Design**: Works perfectly on desktop, tablet, and mobile
+### 🧮 **Calculation Tools**
+- 📊 **Specific Gravity Calculator**: Calculate OG/FG from honey and fruit additions with batch size support
+- 🎯 **Target ABV Calculator**: Design recipes to achieve desired alcohol percentage with ingredient recommendations  
+- 📈 **ABV Calculator**: Simple OG/FG to ABV conversion with real-time calculations
+- 🔄 **Alcohol & Gravity Converter**: Professional conversion between ABV, ABW, SG, BRIX, and Baumé using industry-standard formulas
+
+### 🌍 **Smart Unit System**
+- ⚖️ **Imperial Support**: Pounds, ounces, and gallons with intelligent lbs/oz display (e.g., "1 lbs 7 oz")
+- 🌐 **Metric Support**: Kilograms, grams, and liters with smart display (e.g., "120 g" vs "1.25 kg")
+- 🔄 **Live Conversion**: Real-time switching between measurement systems
+- 📱 **Double-Click Select**: Easy input field selection for quick value replacement
+
+### 🍯 **Ingredient Database**
+- 🐝 **Honey Calculations**: 80% fermentable sugar content with temperature-corrected conversions
+- 🍎 **25+ Fruits & Sweeteners**: Apple, berry, citrus, and specialty sugar sources
+- 📊 **Sugar Content Profiles**: Accurate fermentable sugar percentages for each ingredient
+- 🔢 **Multiple Additions**: Support for complex recipes with multiple ingredient types
+
+### 🔧 **Deployment & Management**
+- 🐳 **LXC Containerization**: Complete Proxmox deployment with Ubuntu 22.04
+- 🌐 **nginx Web Server**: Optimized configuration with security headers and gzip compression
+- 📱 **CLI Management Tools**: Built-in `meadcalc` command for updates, status, logs, and backups
+- 🔄 **Automated Updates**: Safe updates with backup management and rollback capabilities
+
+### 🎨 **Interface & Usability**  
+- 📱 **Responsive Design**: Optimized for desktop, tablet, and mobile devices
+- ⚡ **Real-Time Calculations**: Live updates as you type with input validation
+- 📋 **Reference Materials**: Built-in mead style guidelines and brewing recommendations
 
 This repository contains:
 - **HTML/CSS/JS** front-end for the MeadCalc web application
