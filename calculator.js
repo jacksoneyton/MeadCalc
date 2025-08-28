@@ -930,7 +930,7 @@ function calculateAllConversions(inputValue, fromUnit) {
                 sg = inputValue;
                 break;
             case 'brix':
-                // BRIX to SG: SG = (BRIX / (258.6 - ((BRIX / 258.2) * 227.1))) + 1
+                // Brix to SG: SG = (Brix / (258.6-((Brix / 258.2)*227.1))) + 1
                 sg = (inputValue / (258.6 - ((inputValue / 258.2) * 227.1))) + 1;
                 break;
             case 'baume':
@@ -946,7 +946,7 @@ function calculateAllConversions(inputValue, fromUnit) {
     
     // Calculate remaining gravity units from SG
     if (sg) {
-        // SG to BRIX: BRIX = (((182.4601 * SG - 775.6821) * SG + 1262.7794) * SG - 669.5622)
+        // SG to Brix: Brix = (((182.4601 * SG -775.6821) * SG +1262.7794) * SG -669.5622)
         brix = (((182.4601 * sg - 775.6821) * sg + 1262.7794) * sg - 669.5622);
         
         // SG to Baumé: Baumé = 145 - (145 / SG)
