@@ -41,10 +41,74 @@
             </div>
         </div>
 
-        <!-- ABV Calculator - Horizontal Layout -->
-        <div class="abv-section">
-            <div class="calc-section abv-horizontal">
-                <h2>ABV Calculator</h2>
+        <!-- Unified Brewing Calculator -->
+        <div class="calc-section" style="margin-bottom: 25px;">
+            <h2>Brewing Calculator</h2>
+            
+            <!-- Mode Selector -->
+            <div style="margin-bottom: 20px;">
+                <h3 style="color: #d4af37; margin-bottom: 10px;">Calculation Mode:</h3>
+                <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                    <label style="display: flex; align-items: center; gap: 10px; padding: 12px 20px; background: #2a2a2a; border: 1px solid #555; border-radius: 6px; cursor: pointer; transition: all 0.3s ease; min-width: 250px;">
+                        <input type="radio" name="calc-mode" value="abv-from-ingredients" checked style="accent-color: #d4af37;" onchange="switchUnifiedMode(this.value)">
+                        <span style="color: #ffffff; transition: color 0.3s ease;">Calculate ABV from Ingredients</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 10px; padding: 12px 20px; background: #2a2a2a; border: 1px solid #555; border-radius: 6px; cursor: pointer; transition: all 0.3s ease; min-width: 250px;">
+                        <input type="radio" name="calc-mode" value="ingredients-from-abv" style="accent-color: #d4af37;" onchange="switchUnifiedMode(this.value)">
+                        <span style="color: #ffffff; transition: color 0.3s ease;">Calculate Ingredients for Target ABV</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Calculator Content -->
+            <div id="unified-calculator-content">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; min-height: 400px;">
+                    <!-- Input Section -->
+                    <div style="background: linear-gradient(135deg, #2d2d2d 0%, #3a3a3a 100%); padding: 25px; border-radius: 8px; border: 1px solid #555;">
+                        <h3 style="color: #d4af37; font-size: 1.4rem; margin-bottom: 20px; border-bottom: 1px solid #d4af37; padding-bottom: 8px;">Recipe Inputs</h3>
+                        
+                        <div class="input-group">
+                            <label for="unified-batch-size" id="unified-abv-batch-label">Batch Size (gallons):</label>
+                            <input type="number" id="unified-batch-size" step="0.1" min="0.1" max="50" value="1" placeholder="1" oninput="calculateUnifiedABVMode()">
+                        </div>
+
+                        <div class="input-group honey-input">
+                            <label for="unified-honey-amount" id="unified-abv-honey-label">Honey (lbs):</label>
+                            <div class="weight-input-container">
+                                <input type="number" id="unified-honey-amount" step="1" min="0" placeholder="3" oninput="calculateUnifiedABVMode()">
+                                <input type="number" id="unified-honey-oz" step="1" min="0" max="15" placeholder="0" class="oz-input" style="display:inline-block;" oninput="handleUnifiedWeightOverflow(this, 'unified-honey-amount'); calculateUnifiedABVMode()">
+                            </div>
+                            <small id="unified-honey-conversion" class="conversion-display"></small>
+                        </div>
+
+                        <div class="ingredients-section">
+                            <h4>Additional Ingredients</h4>
+                            <div id="unified-abv-ingredients-list">
+                                <!-- Dynamic ingredient inputs will be added here -->
+                            </div>
+                            <div class="ingredient-controls">
+                                <button type="button" id="unified-abv-add-ingredient-btn" class="add-btn" onclick="addUnifiedABVIngredient()">+ Add Ingredient</button>
+                                <button type="button" id="unified-abv-reset-btn" class="reset-btn" style="margin-left: 10px;" onclick="resetUnifiedABVMode()">Reset All</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Results Section -->
+                    <div style="background: linear-gradient(135deg, #1a3a1a 0%, #2d5a2d 100%); padding: 25px; border-radius: 8px; border: 1px solid #4a7c59;">
+                        <h3 style="color: #d4af37; font-size: 1.4rem; margin-bottom: 20px; border-bottom: 1px solid #d4af37; padding-bottom: 8px;">Calculated Results</h3>
+                        <div id="unified-abv-results">
+                            <div style="color: #90ee90; margin-bottom: 15px;">Enter ingredients to see calculated ABV and gravity</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Simple Calculators Row -->
+        <div class="calculator-grid">
+            <!-- Simple ABV Calculator -->
+            <div class="calc-section">
+                <h2>Simple ABV Calculator</h2>
                 <div class="abv-inputs-row">
                     <div class="input-group">
                         <label for="og">Original Gravity (OG):</label>
@@ -57,87 +121,33 @@
                     <div class="result" id="abv-result"></div>
                 </div>
             </div>
+
+            <!-- Alcohol & Gravity Converter -->
+            <div class="calc-section">
+                <h2>Alcohol & Gravity Converter</h2>
+                <p class="description">Convert between different alcohol and gravity measurement standards</p>
+                
+                <div class="input-group">
+                    <label for="conversion-input">Value:</label>
+                    <input type="number" id="conversion-input" step="0.001" placeholder="Enter value">
+                </div>
+                
+                <div class="input-group">
+                    <label for="conversion-from">Convert From:</label>
+                    <select id="conversion-from">
+                        <option value="abv">ABV (%)</option>
+                        <option value="abw">ABW (%)</option>
+                        <option value="sg">Specific Gravity (SG)</option>
+                        <option value="brix">BRIX (°Bx)</option>
+                        <option value="baume">Baumé (°Bé)</option>
+                    </select>
+                </div>
+                
+                <div id="conversion-result" class="result"></div>
+            </div>
         </div>
 
         <div class="calculator-grid">
-            <!-- Specific Gravity Calculator -->
-            <div class="calc-section">
-                <h2>Specific Gravity from Ingredients</h2>
-                <div class="input-group">
-                    <label for="batch-size" id="batch-label">Batch Size (gallons):</label>
-                    <input type="number" id="batch-size" step="0.1" min="0.1" max="50" value="1" placeholder="1">
-                </div>
-                <div class="input-group honey-input">
-                    <label for="honey-amount" id="honey-label">Honey (lbs):</label>
-                    <div class="weight-input-container">
-                        <input type="number" id="honey-amount" step="1" min="0" placeholder="3">
-                        <input type="number" id="honey-oz" step="0.1" min="0" max="15.9" placeholder="0" class="oz-input" style="display:none;">
-                    </div>
-                    <small id="honey-conversion" class="conversion-display"></small>
-                </div>
-                <div class="input-group">
-                    <label for="fruit-type">Fruit/Sweetener:</label>
-                    <select id="fruit-type">
-                        <option value="">Select fruit or sweetener...</option>
-                        <option value="apple">Apple (fresh)</option>
-                        <option value="apple-juice">Apple Juice</option>
-                        <option value="blackberry">Blackberry</option>
-                        <option value="blueberry">Blueberry</option>
-                        <option value="cherry">Cherry (sweet)</option>
-                        <option value="cherry-tart">Cherry (tart)</option>
-                        <option value="cranberry">Cranberry</option>
-                        <option value="grape">Grape (fresh)</option>
-                        <option value="grape-juice">Grape Juice</option>
-                        <option value="orange">Orange</option>
-                        <option value="orange-juice">Orange Juice</option>
-                        <option value="peach">Peach</option>
-                        <option value="pear">Pear</option>
-                        <option value="raspberry">Raspberry</option>
-                        <option value="strawberry">Strawberry</option>
-                        <option value="elderberry">Elderberry</option>
-                        <option value="elderflower">Elderflower</option>
-                        <option value="cane-sugar">Cane Sugar</option>
-                        <option value="brown-sugar">Brown Sugar</option>
-                        <option value="maple-syrup">Maple Syrup</option>
-                        <option value="agave">Agave Nectar</option>
-                    </select>
-                </div>
-                <div class="input-group fruit-input">
-                    <label for="fruit-amount" id="fruit-label">Amount (lbs):</label>
-                    <div class="weight-input-container">
-                        <input type="number" id="fruit-amount" step="1" min="0" placeholder="2">
-                        <input type="number" id="fruit-oz" step="0.1" min="0" max="15.9" placeholder="0" class="oz-input" style="display:none;">
-                    </div>
-                    <small id="fruit-conversion" class="conversion-display"></small>
-                </div>
-                <div class="result" id="sg-result"></div>
-            </div>
-
-            <!-- Target ABV Calculator -->
-            <div class="calc-section">
-                <h2>Calculate Ingredients for Target ABV</h2>
-                <div class="input-group">
-                    <label for="target-abv">Target ABV (%):</label>
-                    <input type="number" id="target-abv" step="0.1" min="0" max="20" placeholder="12">
-                </div>
-                <div class="input-group">
-                    <label for="target-batch-size" id="target-batch-label">Batch Size (gallons):</label>
-                    <input type="number" id="target-batch-size" step="0.1" min="0.1" max="50" value="1" placeholder="1">
-                </div>
-                <div class="ingredients-section">
-                    <h3>Fermentable Ingredients</h3>
-                    <div id="ingredients-list">
-                        <!-- Dynamic ingredient inputs will be added here -->
-                    </div>
-                    <div class="ingredient-controls">
-                        <button type="button" id="add-ingredient-btn" class="add-btn">+ Add Ingredient</button>
-                        <div class="total-percentage">
-                            <span>Total: </span><span id="total-percentage">0</span>%
-                        </div>
-                    </div>
-                </div>
-                <div class="result" id="ingredients-result"></div>
-            </div>
 
             <!-- Quick Reference -->
             <div class="calc-section">
@@ -208,32 +218,15 @@
                 </div>
             </div>
 
-            <!-- Alcohol & Gravity Converter -->
-            <div class="calc-section">
-                <h2>Alcohol & Gravity Converter</h2>
-                <p class="description">Convert between different alcohol and gravity measurement standards</p>
-                
-                <div class="input-group">
-                    <label for="conversion-input">Value:</label>
-                    <input type="number" id="conversion-input" step="0.001" placeholder="Enter value">
-                </div>
-                
-                <div class="input-group">
-                    <label for="conversion-from">Convert From:</label>
-                    <select id="conversion-from">
-                        <option value="abv">ABV (%)</option>
-                        <option value="abw">ABW (%)</option>
-                        <option value="sg">Specific Gravity (SG)</option>
-                        <option value="brix">BRIX (°Bx)</option>
-                        <option value="baume">Baumé (°Bé)</option>
-                    </select>
-                </div>
-                
-                <div id="conversion-result" class="result"></div>
-            </div>
         </div>
     </div>
 
     <script src="calculator.js"></script>
+    <script>
+        // Ensure select-all functionality works
+        setTimeout(() => {
+            addSelectAllOnDoubleClick();
+        }, 500);
+    </script>
 </body>
 </html>

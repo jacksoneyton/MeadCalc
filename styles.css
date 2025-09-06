@@ -103,7 +103,8 @@ header p {
 
 .weight-input-container {
     display: flex;
-    gap: 10px;
+    gap: 8px;
+    align-items: center;
 }
 
 .weight-input-container input {
@@ -147,28 +148,84 @@ header p {
 
 .ingredient-type {
     flex: 2;
-    padding: 8px 12px;
+    padding: 10px 14px;
     border: 1px solid #d4af37;
-    border-radius: 4px;
-    font-size: 14px;
+    border-radius: 6px;
+    font-size: 16px;
     background: #1a1a1a;
     color: #ffffff;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.ingredient-type:focus {
+    outline: none;
+    border-color: #ffd700;
+    box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.2);
 }
 
 .ingredient-percentage {
     width: 80px;
-    padding: 8px 12px;
+    padding: 10px 14px;
     border: 1px solid #d4af37;
-    border-radius: 4px;
-    font-size: 14px;
+    border-radius: 6px;
+    font-size: 16px;
     text-align: center;
     background: #1a1a1a;
     color: #ffffff;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.ingredient-percentage:focus {
+    outline: none;
+    border-color: #ffd700;
+    box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.2);
+}
+
+.ingredient-amount {
+    flex: 1;
+    padding: 10px 14px;
+    border: 1px solid #d4af37;
+    border-radius: 6px;
+    font-size: 16px;
+    background: #1a1a1a;
+    color: #ffffff;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.ingredient-amount:focus {
+    outline: none;
+    border-color: #ffd700;
+    box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.2);
+}
+
+.ingredient-oz {
+    width: 80px;
+    padding: 10px 14px;
+    border: 1px solid #d4af37;
+    border-radius: 6px;
+    font-size: 16px;
+    background: #1a1a1a;
+    color: #ffffff;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.ingredient-oz:focus {
+    outline: none;
+    border-color: #ffd700;
+    box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.2);
 }
 
 .percentage-symbol {
     color: #d4af37;
     font-weight: 600;
+}
+
+.unit-label,
+.oz-label {
+    color: #d4af37;
+    font-weight: 600;
+    margin-left: 8px;
+    white-space: nowrap;
 }
 
 .ingredient-controls {
@@ -216,6 +273,24 @@ header p {
 .remove-btn:hover {
     background: #e53e3e;
     transform: scale(1.1);
+}
+
+.reset-btn {
+    background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.reset-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(66, 153, 225, 0.3);
+    background: linear-gradient(135deg, #3182ce 0%, #2c5aa0 100%);
 }
 
 .total-percentage {
@@ -339,6 +414,7 @@ header p {
     border-color: #ffd700;
     box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.2);
 }
+
 
 .input-group small {
     color: #e5e5e5;
