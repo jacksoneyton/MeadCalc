@@ -830,7 +830,8 @@ function renderUnifiedCalculator(mode) {
                         <label for="unified-honey-amount" id="unified-abv-honey-label">Honey (lbs):</label>
                         <div class="weight-input-container">
                             <input type="number" id="unified-honey-amount" step="1" min="0" placeholder="3">
-                            <input type="number" id="unified-honey-oz" step="1" min="0" max="15" placeholder="0" class="oz-input" style="${currentWeightUnit === 'imperial' ? 'display:inline-block;' : 'display:none;'}">
+                            <input type="number" id="unified-honey-oz" step="1" min="0" max="15" placeholder="0" class="oz-input" style="display:inline-block;">
+                            <span class="oz-label" style="display:inline-block;">oz</span>
                         </div>
                         <small id="unified-honey-conversion" class="conversion-display"></small>
                     </div>
@@ -1318,11 +1319,11 @@ function renderUnifiedABVIngredient(ingredient) {
                        placeholder="0">
                 <span class="unit-label">${weightUnitMain}</span>
                 <input type="number" class="ingredient-oz oz-input" id="${ingredient.id}-oz"
-                       min="0" max="15" step="1"
+                       min="0" max="${currentWeightUnit === 'imperial' ? '15' : '999'}" step="${currentWeightUnit === 'imperial' ? '1' : '10'}"
                        onchange="handleUnifiedIngredientWeightChange(event)"
                        oninput="handleUnifiedIngredientWeightChange(event)"
-                       placeholder="0" style="${currentWeightUnit === 'imperial' ? 'display:inline-block;' : 'display:none;'}">
-                <span class="oz-label" style="${currentWeightUnit === 'imperial' ? 'display:inline-block;' : 'display:none;'}">${weightUnitSecondary}</span>
+                       placeholder="0" style="display:inline-block;">
+                <span class="oz-label" style="display:inline-block;">${weightUnitSecondary}</span>
             </div>
             <button type="button" class="remove-btn" onclick="removeUnifiedABVIngredient('${ingredient.id}')">&times;</button>
         </div>
