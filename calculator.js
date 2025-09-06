@@ -1,3 +1,14 @@
+// Simple mode switching function
+function switchUnifiedMode(mode) {
+    if (mode === 'ingredients-from-abv') {
+        renderUnifiedCalculator('ingredients-from-abv');
+    } else {
+        // Switch back to ABV mode - need to render the ABV interface
+        renderUnifiedCalculator('abv-from-ingredients');
+    }
+}
+
+
 // Comprehensive database of fermentable ingredients with sugar content
 const ingredients = {
     'apple': { sugarContent: 0.13, name: 'Apple (fresh)' },
@@ -41,6 +52,7 @@ const LITERS_TO_GALLONS = 0.264172;
 // Current unit settings
 let currentWeightUnit = 'imperial'; // 'imperial' or 'metric'
 let currentVolumeUnit = 'imperial'; // 'imperial' or 'metric'
+let isInitialLoad = true; // Track if this is the initial page load
 
 // Dynamic ingredients management
 let targetIngredients = [];
@@ -125,6 +137,9 @@ function updateWeightUnits() {
     const selectedUnit = document.querySelector('input[name="weight-units"]:checked').value;
     currentWeightUnit = selectedUnit;
     
+    // Reset all calculations when units change (always reset for now)
+    resetAllCalculations();
+    
     // Update labels and placeholders
     updateWeightLabels();
     
@@ -139,6 +154,9 @@ function updateVolumeUnits() {
     const selectedUnit = document.querySelector('input[name="volume-units"]:checked').value;
     currentVolumeUnit = selectedUnit;
     
+    // Reset all calculations when units change (always reset for now)
+    resetAllCalculations();
+    
     // Update volume labels
     updateVolumeLabels();
 }
@@ -146,26 +164,35 @@ function updateVolumeUnits() {
 function updateWeightLabels() {
     const honeyLabel = document.getElementById('honey-label');
     const fruitLabel = document.getElementById('fruit-label');
+    const unifiedHoneyLabel = document.getElementById('unified-abv-honey-label');
     
     if (currentWeightUnit === 'imperial') {
-        honeyLabel.textContent = 'Honey (lbs):';
-        fruitLabel.textContent = 'Amount (lbs):';
+        if (honeyLabel) honeyLabel.textContent = 'Honey (lbs):';
+        if (fruitLabel) fruitLabel.textContent = 'Amount (lbs):';
+        if (unifiedHoneyLabel) unifiedHoneyLabel.textContent = 'Honey (lbs):';
     } else {
-        honeyLabel.textContent = 'Honey (kg):';
-        fruitLabel.textContent = 'Amount (kg):';
+        if (honeyLabel) honeyLabel.textContent = 'Honey (kg):';
+        if (fruitLabel) fruitLabel.textContent = 'Amount (kg):';
+        if (unifiedHoneyLabel) unifiedHoneyLabel.textContent = 'Honey (kg):';
     }
 }
 
 function updateVolumeLabels() {
     const batchLabel = document.getElementById('batch-label');
     const targetBatchLabel = document.getElementById('target-batch-label');
+    const unifiedABVBatchLabel = document.getElementById('unified-abv-batch-label');
+    const unifiedTargetBatchLabel = document.getElementById('unified-target-batch-label');
     
     if (currentVolumeUnit === 'imperial') {
-        batchLabel.textContent = 'Batch Size (gallons):';
-        targetBatchLabel.textContent = 'Batch Size (gallons):';
+        if (batchLabel) batchLabel.textContent = 'Batch Size (gallons):';
+        if (targetBatchLabel) targetBatchLabel.textContent = 'Batch Size (gallons):';
+        if (unifiedABVBatchLabel) unifiedABVBatchLabel.textContent = 'Batch Size (gallons):';
+        if (unifiedTargetBatchLabel) unifiedTargetBatchLabel.textContent = 'Batch Size (gallons):';
     } else {
-        batchLabel.textContent = 'Batch Size (liters):';
-        targetBatchLabel.textContent = 'Batch Size (liters):';
+        if (batchLabel) batchLabel.textContent = 'Batch Size (liters):';
+        if (targetBatchLabel) targetBatchLabel.textContent = 'Batch Size (liters):';
+        if (unifiedABVBatchLabel) unifiedABVBatchLabel.textContent = 'Batch Size (liters):';
+        if (unifiedTargetBatchLabel) unifiedTargetBatchLabel.textContent = 'Batch Size (liters):';
     }
 }
 
@@ -174,31 +201,69 @@ function updateWeightInputs() {
     const honeyOz = document.getElementById('honey-oz');
     const fruitAmount = document.getElementById('fruit-amount');
     const fruitOz = document.getElementById('fruit-oz');
+    const unifiedHoneyAmount = document.getElementById('unified-honey-amount');
+    const unifiedHoneyOz = document.getElementById('unified-honey-oz');
     
     if (currentWeightUnit === 'imperial') {
         // Configure for imperial (lbs/oz)
-        honeyAmount.step = '1';
-        fruitAmount.step = '1';
-        honeyOz.style.display = 'inline-block';
-        fruitOz.style.display = 'inline-block';
-        honeyOz.placeholder = 'oz';
-        fruitOz.placeholder = 'oz';
-        honeyOz.step = '0.1';
-        fruitOz.step = '0.1';
-        honeyOz.max = '15.9';
-        fruitOz.max = '15.9';
+        if (honeyAmount) honeyAmount.step = '1';
+        if (fruitAmount) fruitAmount.step = '1';
+        if (unifiedHoneyAmount) unifiedHoneyAmount.step = '1';
+        
+        if (honeyOz) {
+            honeyOz.style.display = 'inline-block';
+            honeyOz.placeholder = 'oz';
+            honeyOz.step = '1';
+            honeyOz.max = '15';
+        }
+        if (fruitOz) {
+            fruitOz.style.display = 'inline-block';
+            fruitOz.placeholder = 'oz';
+            fruitOz.step = '1';
+            fruitOz.max = '15';
+        }
+        if (unifiedHoneyOz) {
+            unifiedHoneyOz.style.display = 'inline-block';
+            unifiedHoneyOz.placeholder = 'oz';
+            unifiedHoneyOz.step = '1';
+            unifiedHoneyOz.max = '15';
+        }
+        
+        // Update oz labels
+        document.querySelectorAll('.oz-label').forEach(label => {
+            label.textContent = 'oz';
+            label.style.display = 'inline-block';
+        });
     } else {
         // Configure for metric (kg/g)
-        honeyAmount.step = '1';
-        fruitAmount.step = '1';
-        honeyOz.style.display = 'inline-block';
-        fruitOz.style.display = 'inline-block';
-        honeyOz.placeholder = 'g';
-        fruitOz.placeholder = 'g';
-        honeyOz.step = '10';
-        fruitOz.step = '10';
-        honeyOz.max = '999';
-        fruitOz.max = '999';
+        if (honeyAmount) honeyAmount.step = '1';
+        if (fruitAmount) fruitAmount.step = '1';
+        if (unifiedHoneyAmount) unifiedHoneyAmount.step = '1';
+        
+        if (honeyOz) {
+            honeyOz.style.display = 'inline-block';
+            honeyOz.placeholder = 'g';
+            honeyOz.step = '10';
+            honeyOz.max = '999';
+        }
+        if (fruitOz) {
+            fruitOz.style.display = 'inline-block';
+            fruitOz.placeholder = 'g';
+            fruitOz.step = '10';
+            fruitOz.max = '999';
+        }
+        if (unifiedHoneyOz) {
+            unifiedHoneyOz.style.display = 'inline-block';
+            unifiedHoneyOz.placeholder = 'g';
+            unifiedHoneyOz.step = '10';
+            unifiedHoneyOz.max = '999';
+        }
+        
+        // Update g labels
+        document.querySelectorAll('.oz-label').forEach(label => {
+            label.textContent = 'g';
+            label.style.display = 'inline-block';
+        });
     }
 }
 
@@ -732,17 +797,926 @@ function formatNumber(num, decimals = 2) {
     return parseFloat(num.toFixed(decimals));
 }
 
+// Unified Calculator Variables
+let unifiedABVIngredients = [];
+let unifiedTargetIngredients = [];
+let unifiedABVCounter = 0;
+let unifiedTargetCounter = 0;
+
+// Unified Calculator Functions
+function renderUnifiedCalculator(mode) {
+    const contentDiv = document.getElementById('unified-calculator-content');
+    
+    // Clear ingredient arrays when switching modes to prevent duplicates
+    unifiedABVIngredients = [];
+    unifiedTargetIngredients = [];
+    unifiedABVCounter = 0;
+    unifiedTargetCounter = 0;
+    console.log('Cleared ingredient arrays for mode:', mode);
+    
+    if (mode === 'abv-from-ingredients') {
+        contentDiv.innerHTML = `
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; min-height: 400px;">
+                <!-- Input Section -->
+                <div style="background: linear-gradient(135deg, #2d2d2d 0%, #3a3a3a 100%); padding: 25px; border-radius: 8px; border: 1px solid #555;">
+                    <h3 style="color: #d4af37; font-size: 1.4rem; margin-bottom: 20px; border-bottom: 1px solid #d4af37; padding-bottom: 8px;">Recipe Inputs</h3>
+                    
+                    <div class="input-group">
+                        <label for="unified-batch-size" id="unified-abv-batch-label">Batch Size (gallons):</label>
+                        <input type="number" id="unified-batch-size" step="0.1" min="0.1" max="50" value="1" placeholder="1">
+                    </div>
+
+                    <div class="input-group honey-input">
+                        <label for="unified-honey-amount" id="unified-abv-honey-label">Honey (lbs):</label>
+                        <div class="weight-input-container">
+                            <input type="number" id="unified-honey-amount" step="1" min="0" placeholder="3">
+                            <input type="number" id="unified-honey-oz" step="1" min="0" max="15" placeholder="0" class="oz-input" style="${currentWeightUnit === 'imperial' ? 'display:inline-block;' : 'display:none;'}">
+                        </div>
+                        <small id="unified-honey-conversion" class="conversion-display"></small>
+                    </div>
+
+                    <div class="ingredients-section">
+                        <h4>Additional Ingredients</h4>
+                        <div id="unified-abv-ingredients-list">
+                            <!-- Dynamic ingredient inputs will be added here -->
+                        </div>
+                        <div class="ingredient-controls">
+                            <button type="button" id="unified-abv-add-ingredient-btn" class="add-btn">+ Add Ingredient</button>
+                            <button type="button" id="unified-abv-reset-btn" class="reset-btn" style="margin-left: 10px;">Reset All</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Results Section -->
+                <div style="background: linear-gradient(135deg, #1a3a1a 0%, #2d5a2d 100%); padding: 25px; border-radius: 8px; border: 1px solid #4a7c59;">
+                    <h3 style="color: #d4af37; font-size: 1.4rem; margin-bottom: 20px; border-bottom: 1px solid #d4af37; padding-bottom: 8px;">Calculated Results</h3>
+                    <div id="unified-abv-results">
+                        <div style="color: #90ee90; margin-bottom: 15px;">Enter ingredients to see calculated ABV and gravity</div>
+                    </div>
+                </div>
+            </div>
+        `;
+    } else {
+        contentDiv.innerHTML = `
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; min-height: 400px;">
+                <!-- Input Section -->
+                <div style="background: linear-gradient(135deg, #2d2d2d 0%, #3a3a3a 100%); padding: 25px; border-radius: 8px; border: 1px solid #555;">
+                    <h3 style="color: #d4af37; font-size: 1.4rem; margin-bottom: 20px; border-bottom: 1px solid #d4af37; padding-bottom: 8px;">Target Recipe</h3>
+                    
+                    <div class="input-group">
+                        <label for="unified-target-abv">Target ABV (%):</label>
+                        <input type="number" id="unified-target-abv" step="0.1" min="0" max="20" placeholder="12">
+                    </div>
+
+                    <div class="input-group">
+                        <label for="unified-target-batch-size" id="unified-target-batch-label">Batch Size (gallons):</label>
+                        <input type="number" id="unified-target-batch-size" step="0.1" min="0.1" max="50" value="1" placeholder="1">
+                    </div>
+
+                    <div class="ingredients-section">
+                        <h4>Fermentable Ingredients</h4>
+                        <div id="unified-target-ingredients-list">
+                            <!-- Dynamic ingredient inputs will be added here -->
+                        </div>
+                        <div class="ingredient-controls">
+                            <button type="button" id="unified-target-add-ingredient-btn" class="add-btn">+ Add Ingredient</button>
+                            <button type="button" id="unified-target-reset-btn" class="reset-btn" style="margin-left: 10px;">Reset All</button>
+                            <div class="total-percentage">
+                                <span>Total: </span><span id="unified-total-percentage">0</span>%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Results Section -->
+                <div style="background: linear-gradient(135deg, #1a3a1a 0%, #2d5a2d 100%); padding: 25px; border-radius: 8px; border: 1px solid #4a7c59;">
+                    <h3 style="color: #d4af37; font-size: 1.4rem; margin-bottom: 20px; border-bottom: 1px solid #d4af37; padding-bottom: 8px;">Required Ingredients</h3>
+                    <div id="unified-target-results">
+                        <div style="color: #90ee90; margin-bottom: 15px;">Enter target ABV and ingredients to see required amounts</div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
+    // Add event listeners for the new inputs
+    setupUnifiedEventListeners(mode);
+    
+    // Initialize target mode with default honey ingredient
+    if (mode === 'ingredients-from-abv') {
+        // Add default honey ingredient only if none exist
+        setTimeout(() => {
+            console.log('Target ingredients before adding:', unifiedTargetIngredients.length);
+            if (unifiedTargetIngredients.length === 0) {
+                console.log('Adding default honey ingredient');
+                addUnifiedTargetIngredient();
+                console.log('Target ingredients after adding:', unifiedTargetIngredients.length);
+                if (unifiedTargetIngredients.length === 1) {
+                    unifiedTargetIngredients[0].percentage = 100;
+                    const input = document.querySelector(`#${unifiedTargetIngredients[0].id} .ingredient-percentage`);
+                    if (input) input.value = '100';
+                    updateUnifiedTargetTotalPercentage();
+                }
+            }
+        }, 50);
+    }
+    
+    // Update units for unified calculator
+    updateWeightLabels();
+    updateVolumeLabels();
+    updateWeightInputs();
+}
+
+function setupUnifiedEventListeners(mode) {
+    if (mode === 'abv-from-ingredients') {
+        // Add event listener for ABV add ingredient button
+        const abvBtn = document.getElementById('unified-abv-add-ingredient-btn');
+        if (abvBtn) {
+            abvBtn.addEventListener('click', addUnifiedABVIngredient);
+        }
+        
+        // Add event listener for ABV reset button
+        const abvResetBtn = document.getElementById('unified-abv-reset-btn');
+        if (abvResetBtn) {
+            abvResetBtn.addEventListener('click', resetUnifiedABVMode);
+        }
+        
+        // Add input listeners for real-time calculation
+        const inputs = ['unified-batch-size', 'unified-honey-amount', 'unified-honey-oz'];
+        inputs.forEach(id => {
+            const input = document.getElementById(id);
+            if (input) {
+                input.addEventListener('input', calculateUnifiedABVMode);
+                input.addEventListener('change', calculateUnifiedABVMode);
+            }
+        });
+        
+        // Add weight overflow handling for honey inputs
+        const honeyOzInput = document.getElementById('unified-honey-oz');
+        if (honeyOzInput) {
+            honeyOzInput.addEventListener('input', function() {
+                handleUnifiedWeightOverflow(this, 'unified-honey-amount');
+                calculateUnifiedABVMode();
+            });
+        }
+        
+    } else {
+        // Add event listener for target add ingredient button
+        const targetBtn = document.getElementById('unified-target-add-ingredient-btn');
+        if (targetBtn) {
+            targetBtn.addEventListener('click', addUnifiedTargetIngredient);
+        }
+        
+        // Add event listener for target reset button
+        const targetResetBtn = document.getElementById('unified-target-reset-btn');
+        if (targetResetBtn) {
+            targetResetBtn.addEventListener('click', resetUnifiedTargetMode);
+        }
+        
+        // Add input listeners for real-time calculation
+        const inputs = ['unified-target-abv', 'unified-target-batch-size'];
+        inputs.forEach(id => {
+            const input = document.getElementById(id);
+            if (input) {
+                input.addEventListener('input', calculateUnifiedTargetMode);
+                input.addEventListener('change', calculateUnifiedTargetMode);
+            }
+        });
+        
+        // Add default honey ingredient if no ingredients exist
+        if (unifiedTargetIngredients.length === 0) {
+            addUnifiedTargetIngredient();
+            // Set default percentage to 100% for the first ingredient
+            setTimeout(() => {
+                if (unifiedTargetIngredients.length === 1) {
+                    unifiedTargetIngredients[0].percentage = 100;
+                    const input = document.querySelector(`#${unifiedTargetIngredients[0].id} .ingredient-percentage`);
+                    if (input) input.value = '100';
+                    updateUnifiedTargetTotalPercentage();
+                    calculateUnifiedTargetMode();
+                }
+            }, 100);
+        }
+    }
+}
+
+function calculateUnifiedABVMode() {
+    let batchSize = parseFloat(document.getElementById('unified-batch-size').value) || 0;
+    const honeyAmount = parseFloat(document.getElementById('unified-honey-amount').value) || 0;
+    const honeyOz = parseFloat(document.getElementById('unified-honey-oz').value) || 0;
+    
+    // Convert batch size to gallons if needed
+    if (currentVolumeUnit === 'metric') {
+        batchSize = batchSize * LITERS_TO_GALLONS;
+    }
+    
+    const resultsDiv = document.getElementById('unified-abv-results');
+    
+    if (batchSize <= 0) {
+        resultsDiv.innerHTML = '<div style="color: #90ee90; margin-bottom: 15px;">Enter batch size and ingredients to see results</div>';
+        return;
+    }
+    
+    let totalPpg = 0;
+    let totalWeight = 0;
+    let ingredientBreakdown = [];
+    
+    // Calculate base honey contribution
+    let totalHoneyLbs;
+    if (currentWeightUnit === 'imperial') {
+        totalHoneyLbs = honeyAmount + (honeyOz / 16);
+    } else {
+        // Convert kg/g to lbs for calculation
+        totalHoneyLbs = (honeyAmount + (honeyOz / 1000)) * KG_TO_LBS;
+    }
+    
+    if (totalHoneyLbs > 0) {
+        // Calculate honey PPG using sugar content method
+        const honeySugarWeight = totalHoneyLbs * HONEY_SUGAR_CONTENT;
+        const honeyPpg = honeySugarWeight * GRAVITY_POINTS_PER_LB_SUGAR_PER_GALLON;
+        totalPpg += honeyPpg;
+        totalWeight += totalHoneyLbs;
+        ingredientBreakdown.push({
+            name: 'Honey',
+            amount: totalHoneyLbs,
+            ppg: honeyPpg
+        });
+    }
+    
+    // Calculate dynamic ingredients contribution
+    unifiedABVIngredients.forEach(ingredient => {
+        if (ingredient.type) {
+            const ingredientData = ingredients[ingredient.type];
+            if (ingredientData) {
+                let amount = ingredient.amount || 0;
+                
+                // Add ounces if in imperial mode
+                if (currentWeightUnit === 'imperial') {
+                    const ozInput = document.getElementById(`${ingredient.id}-oz`);
+                    if (ozInput) {
+                        const ozValue = parseFloat(ozInput.value) || 0;
+                        amount += (ozValue / 16);
+                    }
+                }
+                
+                // Only proceed if there's a meaningful amount
+                if (amount > 0) {
+                    // Convert metric to imperial if needed
+                    if (currentWeightUnit === 'metric') {
+                        amount *= 2.20462; // kg to lbs
+                    }
+                    
+                    // Calculate PPG from sugar content
+                    const sugarWeight = amount * ingredientData.sugarContent;
+                    const ppg = sugarWeight * GRAVITY_POINTS_PER_LB_SUGAR_PER_GALLON;
+                    totalPpg += ppg;
+                    totalWeight += amount;
+                    
+                    ingredientBreakdown.push({
+                        name: ingredientData.name,
+                        amount: amount,
+                        ppg: ppg
+                    });
+                }
+            }
+        }
+    });
+    
+    if (totalPpg === 0) {
+        resultsDiv.innerHTML = '<div style="color: #90ee90; margin-bottom: 15px;">Add honey or other fermentable ingredients to see results</div>';
+        return;
+    }
+    
+    // Calculate final gravity and ABV
+    const estimatedOG = 1.000 + (totalPpg / (batchSize * 1000));
+    const estimatedABV = (estimatedOG - 1.000) * 131.25;
+    const totalWeightPerGallon = totalWeight / batchSize;
+    
+    // Get display units
+    const weightUnit = currentWeightUnit === 'imperial' ? 'lbs' : 'kg';
+    const volumeUnit = currentVolumeUnit === 'imperial' ? 'gallon' : 'liter';
+    
+    // Convert weight per volume to display units
+    let displayWeightPerVolume = totalWeightPerGallon;
+    if (currentWeightUnit === 'metric') {
+        displayWeightPerVolume = totalWeightPerGallon * LBS_TO_KG; // Convert lbs to kg
+    }
+    if (currentVolumeUnit === 'metric') {
+        displayWeightPerVolume = displayWeightPerVolume * GALLONS_TO_LITERS; // Adjust for liters
+    }
+    
+    // Format ingredient breakdown
+    let breakdownHtml = '';
+    if (ingredientBreakdown.length > 0) {
+        breakdownHtml = `
+            <div style="margin-bottom: 15px; padding: 10px; background: rgba(255, 255, 255, 0.05); border-radius: 6px; border-left: 3px solid #d4af37;">
+                <div style="font-weight: 600; color: #90ee90; margin-bottom: 8px;">Ingredient Breakdown:</div>
+                ${ingredientBreakdown.map(ing => {
+                    // Format points display to show small contributions better
+                    const points = ing.ppg / 10;
+                    const pointsDisplay = points < 1 ? points.toFixed(1) : points.toFixed(0);
+                    
+                    // Convert weight to display units
+                    let displayAmount = ing.amount;
+                    if (currentWeightUnit === 'metric') {
+                        displayAmount = ing.amount * LBS_TO_KG;
+                    }
+                    
+                    return `
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                            <span>${ing.name}:</span>
+                            <span>${displayAmount.toFixed(2)} ${weightUnit} (${pointsDisplay} pts)</span>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        `;
+    }
+    
+    resultsDiv.innerHTML = `
+        <div style="margin-bottom: 15px; padding: 10px; background: rgba(255, 255, 255, 0.05); border-radius: 6px; border-left: 3px solid #d4af37;">
+            <div style="font-weight: 600; color: #90ee90; margin-bottom: 4px;">Estimated Original Gravity:</div>
+            <div style="font-size: 1.1rem; color: #ffffff;">${estimatedOG.toFixed(3)}</div>
+        </div>
+        <div style="margin-bottom: 15px; padding: 10px; background: rgba(255, 255, 255, 0.05); border-radius: 6px; border-left: 3px solid #d4af37;">
+            <div style="font-weight: 600; color: #90ee90; margin-bottom: 4px;">Potential ABV:</div>
+            <div style="font-size: 1.1rem; color: #ffffff;">${estimatedABV.toFixed(2)}%</div>
+        </div>
+        <div style="margin-bottom: 15px; padding: 10px; background: rgba(255, 255, 255, 0.05); border-radius: 6px; border-left: 3px solid #d4af37;">
+            <div style="font-weight: 600; color: #90ee90; margin-bottom: 4px;">Total Weight per ${volumeUnit.charAt(0).toUpperCase() + volumeUnit.slice(1)}:</div>
+            <div style="font-size: 1.1rem; color: #ffffff;">${displayWeightPerVolume.toFixed(2)} ${weightUnit}</div>
+        </div>
+        ${breakdownHtml}
+    `;
+}
+
+function calculateUnifiedTargetMode() {
+    const targetABV = parseFloat(document.getElementById('unified-target-abv').value) || 0;
+    let batchSize = parseFloat(document.getElementById('unified-target-batch-size').value) || 0;
+    
+    // Convert batch size to gallons if needed
+    if (currentVolumeUnit === 'metric') {
+        batchSize = batchSize * LITERS_TO_GALLONS;
+    }
+    
+    const resultsDiv = document.getElementById('unified-target-results');
+    
+    if (targetABV <= 0 || batchSize <= 0) {
+        resultsDiv.innerHTML = '<div style="color: #90ee90; margin-bottom: 15px;">Enter target ABV and batch size to see required ingredients</div>';
+        return;
+    }
+    
+    // Check if we have ingredients defined
+    if (unifiedTargetIngredients.length === 0) {
+        resultsDiv.innerHTML = '<div style="color: #90ee90; margin-bottom: 15px;">Add ingredients to calculate required amounts</div>';
+        return;
+    }
+    
+    // Check if total percentage is 100%
+    const totalPercentage = unifiedTargetIngredients.reduce((sum, ing) => sum + ing.percentage, 0);
+    
+    if (totalPercentage !== 100) {
+        resultsDiv.innerHTML = `
+            <div style="color: #ff6b6b; margin-bottom: 15px;">
+                Total ingredient percentage must equal 100% (currently ${totalPercentage.toFixed(0)}%)
+            </div>
+        `;
+        return;
+    }
+    
+    // Calculate required original gravity
+    const requiredOG = 1.000 + (targetABV / 131.25);
+    const requiredTotalPpg = (requiredOG - 1.000) * batchSize * 1000;
+    
+    // Calculate required amounts for each ingredient
+    let ingredientResults = [];
+    let totalWeight = 0;
+    
+    unifiedTargetIngredients.forEach(ingredient => {
+        if (ingredient.type && ingredient.percentage > 0) {
+            let ingredientData;
+            let ppgPerLb;
+            
+            if (ingredient.type === 'honey') {
+                ingredientData = {name: 'Honey'};
+                ppgPerLb = HONEY_SUGAR_CONTENT * GRAVITY_POINTS_PER_LB_SUGAR_PER_GALLON;
+            } else {
+                ingredientData = ingredients[ingredient.type];
+                ppgPerLb = ingredientData.sugarContent * GRAVITY_POINTS_PER_LB_SUGAR_PER_GALLON;
+            }
+            
+            if (ingredientData) {
+                const targetPpg = requiredTotalPpg * (ingredient.percentage / 100);
+                const requiredAmount = targetPpg / ppgPerLb;
+                
+                // Convert to display units if needed
+                let displayAmount = requiredAmount;
+                let displayUnit = 'lbs';
+                
+                if (currentWeightUnit === 'metric') {
+                    displayAmount = requiredAmount / 2.20462; // lbs to kg
+                    displayUnit = 'kg';
+                }
+                
+                totalWeight += requiredAmount;
+                
+                ingredientResults.push({
+                    name: ingredientData.name,
+                    percentage: ingredient.percentage,
+                    amount: displayAmount,
+                    unit: displayUnit,
+                    ppg: targetPpg
+                });
+            }
+        }
+    });
+    
+    const totalWeightPerGallon = totalWeight / batchSize;
+    
+    // Get display units
+    const weightUnit = currentWeightUnit === 'imperial' ? 'lbs' : 'kg';
+    const volumeUnit = currentVolumeUnit === 'imperial' ? 'gallon' : 'liter';
+    
+    // Convert weight per volume to display units
+    let displayWeightPerVolume = totalWeightPerGallon;
+    if (currentWeightUnit === 'metric') {
+        displayWeightPerVolume = totalWeightPerGallon * LBS_TO_KG; // Convert lbs to kg
+    }
+    if (currentVolumeUnit === 'metric') {
+        displayWeightPerVolume = displayWeightPerVolume * GALLONS_TO_LITERS; // Adjust for liters
+    }
+    
+    // Display results
+    let ingredientsHtml = ingredientResults.map(ing => `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding: 8px; background: rgba(255, 255, 255, 0.03); border-radius: 4px;">
+            <div>
+                <div style="font-weight: 500; color: #ffffff;">${ing.name}</div>
+                <small style="color: #cccccc;">${ing.percentage}% of total fermentables</small>
+            </div>
+            <div style="text-align: right;">
+                <div style="font-size: 1.1rem; color: #d4af37;">${ing.amount.toFixed(2)} ${ing.unit}</div>
+                <small style="color: #cccccc;">${(ing.ppg/10).toFixed(0)} pts contribution</small>
+            </div>
+        </div>
+    `).join('');
+    
+    resultsDiv.innerHTML = `
+        <div style="margin-bottom: 15px; padding: 10px; background: rgba(255, 255, 255, 0.05); border-radius: 6px; border-left: 3px solid #d4af37;">
+            <div style="font-weight: 600; color: #90ee90; margin-bottom: 4px;">Required Original Gravity:</div>
+            <div style="font-size: 1.1rem; color: #ffffff;">${requiredOG.toFixed(3)}</div>
+        </div>
+        <div style="margin-bottom: 15px; padding: 10px; background: rgba(255, 255, 255, 0.05); border-radius: 6px; border-left: 3px solid #d4af37;">
+            <div style="font-weight: 600; color: #90ee90; margin-bottom: 4px;">Total Weight per ${volumeUnit.charAt(0).toUpperCase() + volumeUnit.slice(1)}:</div>
+            <div style="font-size: 1.1rem; color: #ffffff;">${displayWeightPerVolume.toFixed(2)} ${weightUnit}</div>
+        </div>
+        <div style="margin-bottom: 15px; padding: 10px; background: rgba(255, 255, 255, 0.05); border-radius: 6px; border-left: 3px solid #d4af37;">
+            <div style="font-weight: 600; color: #90ee90; margin-bottom: 12px;">Required Ingredients:</div>
+            ${ingredientsHtml}
+        </div>
+    `;
+}
+
+// Unified Ingredient Management Functions
+function addUnifiedABVIngredient() {
+    const id = `unified-abv-ingredient-${unifiedABVCounter++}`;
+    const ingredient = {
+        id: id,
+        type: '',
+        amount: 0
+    };
+    
+    unifiedABVIngredients.push(ingredient);
+    renderUnifiedABVIngredient(ingredient);
+    calculateUnifiedABVMode();
+}
+
+function renderUnifiedABVIngredient(ingredient) {
+    const container = document.getElementById('unified-abv-ingredients-list');
+    const div = document.createElement('div');
+    div.className = 'ingredient-item';
+    div.id = ingredient.id;
+    
+    const ingredientOptions = Object.keys(ingredients).map(key => 
+        `<option value="${key}">${ingredients[key].name}</option>`
+    ).join('');
+    
+    const weightUnitMain = currentWeightUnit === 'imperial' ? 'lbs' : 'kg';
+    const weightUnitSecondary = currentWeightUnit === 'imperial' ? 'oz' : 'g';
+    
+    div.innerHTML = `
+        <div class="ingredient-controls-row">
+            <select class="ingredient-type" onchange="updateUnifiedABVIngredient('${ingredient.id}', 'type', this.value)">
+                <option value="">Select ingredient...</option>
+                ${ingredientOptions}
+            </select>
+            <div class="weight-input-container">
+                <input type="number" class="ingredient-amount" id="${ingredient.id}-amount"
+                       value="${ingredient.amount}" 
+                       min="0" step="1"
+                       onchange="updateUnifiedABVIngredient('${ingredient.id}', 'amount', this.value)"
+                       oninput="updateUnifiedABVIngredient('${ingredient.id}', 'amount', this.value)"
+                       placeholder="0">
+                <span class="unit-label">${weightUnitMain}</span>
+                <input type="number" class="ingredient-oz oz-input" id="${ingredient.id}-oz"
+                       min="0" max="15" step="1"
+                       onchange="handleUnifiedIngredientWeightChange(event)"
+                       oninput="handleUnifiedIngredientWeightChange(event)"
+                       placeholder="0" style="${currentWeightUnit === 'imperial' ? 'display:inline-block;' : 'display:none;'}">
+                <span class="oz-label" style="${currentWeightUnit === 'imperial' ? 'display:inline-block;' : 'display:none;'}">${weightUnitSecondary}</span>
+            </div>
+            <button type="button" class="remove-btn" onclick="removeUnifiedABVIngredient('${ingredient.id}')">&times;</button>
+        </div>
+        <small class="conversion-display" id="${ingredient.id}-conversion"></small>
+    `;
+    
+    container.appendChild(div);
+}
+
+function updateUnifiedABVIngredient(id, property, value) {
+    const ingredient = unifiedABVIngredients.find(ing => ing.id === id);
+    if (ingredient) {
+        ingredient[property] = property === 'amount' ? parseFloat(value) || 0 : value;
+        calculateUnifiedABVMode();
+    }
+}
+
+function removeUnifiedABVIngredient(id) {
+    unifiedABVIngredients = unifiedABVIngredients.filter(ing => ing.id !== id);
+    document.getElementById(id).remove();
+    calculateUnifiedABVMode();
+}
+
+function addUnifiedTargetIngredient() {
+    const id = `unified-target-ingredient-${unifiedTargetCounter++}`;
+    const ingredient = {
+        id: id,
+        type: 'honey',
+        percentage: 0
+    };
+    
+    unifiedTargetIngredients.push(ingredient);
+    renderUnifiedTargetIngredient(ingredient);
+    updateUnifiedTargetTotalPercentage();
+    calculateUnifiedTargetMode();
+}
+
+function renderUnifiedTargetIngredient(ingredient) {
+    const container = document.getElementById('unified-target-ingredients-list');
+    const div = document.createElement('div');
+    div.className = 'ingredient-item';
+    div.id = ingredient.id;
+    
+    const ingredientOptions = Object.keys(ingredients).map(key => 
+        `<option value="${key}">${ingredients[key].name}</option>`
+    ).join('');
+    
+    div.innerHTML = `
+        <div class="ingredient-controls-row">
+            <select class="ingredient-type" onchange="updateUnifiedTargetIngredient('${ingredient.id}', 'type', this.value)">
+                <option value="honey">Honey</option>
+                ${ingredientOptions}
+            </select>
+            <input type="number" class="ingredient-percentage" 
+                   value="${ingredient.percentage}" 
+                   min="0" max="100" step="1"
+                   onchange="updateUnifiedTargetIngredient('${ingredient.id}', 'percentage', this.value)"
+                   oninput="updateUnifiedTargetIngredient('${ingredient.id}', 'percentage', this.value)">
+            <span class="percentage-symbol">%</span>
+            <button type="button" class="remove-btn" onclick="removeUnifiedTargetIngredient('${ingredient.id}')">&times;</button>
+        </div>
+    `;
+    
+    container.appendChild(div);
+}
+
+function updateUnifiedTargetIngredient(id, property, value) {
+    const ingredient = unifiedTargetIngredients.find(ing => ing.id === id);
+    if (ingredient) {
+        const oldValue = ingredient[property];
+        ingredient[property] = property === 'percentage' ? parseFloat(value) || 0 : value;
+        
+        // Auto-adjust honey percentage when other ingredients change
+        if (property === 'percentage') {
+            autoAdjustHoneyPercentage(id, parseFloat(value) || 0, parseFloat(oldValue) || 0);
+        }
+        
+        // If changing ingredient type, ensure we have a honey base
+        if (property === 'type') {
+            ensureHoneyBase();
+        }
+        
+        updateUnifiedTargetTotalPercentage();
+        calculateUnifiedTargetMode();
+    }
+}
+
+function removeUnifiedTargetIngredient(id) {
+    // Get the removed ingredient info before filtering
+    const removedIngredient = unifiedTargetIngredients.find(ing => ing.id === id);
+    
+    unifiedTargetIngredients = unifiedTargetIngredients.filter(ing => ing.id !== id);
+    document.getElementById(id).remove();
+    
+    // Auto-adjust honey percentage when ingredient is removed
+    if (removedIngredient) {
+        autoAdjustHoneyPercentage(id, 0, removedIngredient.percentage);
+    }
+    
+    updateUnifiedTargetTotalPercentage();
+    calculateUnifiedTargetMode();
+}
+
+function autoAdjustHoneyPercentage(changedIngredientId, newPercentage, oldPercentage) {
+    // Find the honey ingredient (first ingredient with type 'honey')
+    const honeyIngredient = unifiedTargetIngredients.find(ing => ing.type === 'honey');
+    
+    if (!honeyIngredient || honeyIngredient.id === changedIngredientId) {
+        // If no honey ingredient exists or the honey itself was changed, don't auto-adjust
+        return;
+    }
+    
+    // Calculate the change in percentage
+    const percentageChange = newPercentage - oldPercentage;
+    
+    // Adjust honey percentage to compensate
+    let newHoneyPercentage = honeyIngredient.percentage - percentageChange;
+    
+    // Handle edge cases
+    if (newHoneyPercentage < 0) {
+        // If honey would go negative, set it to 0 and cap the changed ingredient
+        newHoneyPercentage = 0;
+        const maxChangeAllowed = honeyIngredient.percentage + oldPercentage;
+        
+        // Find the changed ingredient and cap it
+        const changedIngredient = unifiedTargetIngredients.find(ing => ing.id === changedIngredientId);
+        if (changedIngredient) {
+            changedIngredient.percentage = Math.min(changedIngredient.percentage, maxChangeAllowed);
+            // Update the changed ingredient's UI
+            const changedInput = document.querySelector(`#${changedIngredientId} .ingredient-percentage`);
+            if (changedInput) {
+                changedInput.value = changedIngredient.percentage.toFixed(0);
+            }
+        }
+    } else if (newHoneyPercentage > 100) {
+        // If honey would exceed 100%, cap it at 100%
+        newHoneyPercentage = 100;
+    }
+    
+    // Update honey ingredient data
+    honeyIngredient.percentage = newHoneyPercentage;
+    
+    // Update the honey input field in the UI
+    const honeyInput = document.querySelector(`#${honeyIngredient.id} .ingredient-percentage`);
+    if (honeyInput) {
+        honeyInput.value = newHoneyPercentage.toFixed(0);
+    }
+}
+
+function ensureHoneyBase() {
+    // Check if we have at least one honey ingredient
+    const hasHoney = unifiedTargetIngredients.some(ing => ing.type === 'honey');
+    
+    if (!hasHoney && unifiedTargetIngredients.length > 0) {
+        // If no honey exists but we have other ingredients, add a honey ingredient
+        const remainingPercentage = 100 - unifiedTargetIngredients.reduce((sum, ing) => sum + ing.percentage, 0);
+        
+        const honeyId = `unified-target-ingredient-${unifiedTargetCounter++}`;
+        const honeyIngredient = {
+            id: honeyId,
+            type: 'honey',
+            percentage: Math.max(0, remainingPercentage)
+        };
+        
+        // Add honey as the first ingredient
+        unifiedTargetIngredients.unshift(honeyIngredient);
+        
+        // Render the honey ingredient at the top
+        const container = document.getElementById('unified-target-ingredients-list');
+        if (container) {
+            renderUnifiedTargetIngredient(honeyIngredient);
+            // Move the honey ingredient to the top
+            const honeyElement = document.getElementById(honeyId);
+            if (honeyElement) {
+                container.insertBefore(honeyElement, container.firstChild);
+            }
+        }
+    }
+}
+
+function updateUnifiedTargetTotalPercentage() {
+    const total = unifiedTargetIngredients.reduce((sum, ing) => sum + ing.percentage, 0);
+    const totalElement = document.getElementById('unified-total-percentage');
+    if (totalElement) {
+        totalElement.textContent = total.toFixed(0);
+        
+        // Update styling based on total
+        totalElement.className = '';
+        if (total > 100) {
+            totalElement.style.color = '#ff6b6b';
+        } else if (total === 100) {
+            totalElement.style.color = '#4ecdc4';
+        } else {
+            totalElement.style.color = '#ffffff';
+        }
+    }
+}
+
+function handleUnifiedWeightOverflow(ozInput, lbsInputId) {
+    if (currentWeightUnit === 'imperial') {
+        const ozValue = parseFloat(ozInput.value) || 0;
+        if (ozValue >= 16) {
+            const lbsInput = document.getElementById(lbsInputId);
+            const currentLbs = parseFloat(lbsInput.value) || 0;
+            const additionalLbs = Math.floor(ozValue / 16);
+            const remainingOz = ozValue % 16;
+            
+            lbsInput.value = currentLbs + additionalLbs;
+            ozInput.value = remainingOz;
+        }
+    }
+}
+
+function handleUnifiedIngredientWeightChange(event) {
+    const input = event.target;
+    const baseId = input.id.replace('-oz', '');
+    
+    if (currentWeightUnit === 'imperial' && input.classList.contains('ingredient-oz')) {
+        const ozValue = parseFloat(input.value) || 0;
+        if (ozValue >= 16) {
+            const lbsInput = document.getElementById(baseId + '-amount');
+            const currentLbs = parseFloat(lbsInput.value) || 0;
+            const additionalLbs = Math.floor(ozValue / 16);
+            const remainingOz = ozValue % 16;
+            
+            lbsInput.value = currentLbs + additionalLbs;
+            input.value = remainingOz;
+            
+            // Update the ingredient data
+            updateUnifiedABVIngredient(baseId, 'amount', lbsInput.value);
+        }
+    }
+    
+    // Always recalculate when ounces change (even small amounts)
+    calculateUnifiedABVMode();
+}
+
+// Reset All Calculations Function
+function resetAllCalculations() {
+    // Reset Simple ABV Calculator
+    const ogInput = document.getElementById('og');
+    const fgInput = document.getElementById('fg');
+    const abvResult = document.getElementById('abv-result');
+    
+    if (ogInput) ogInput.value = '';
+    if (fgInput) fgInput.value = '';
+    if (abvResult) abvResult.innerHTML = '';
+    
+    // Reset Unified Calculator
+    const currentMode = document.querySelector('input[name="calc-mode"]:checked');
+    if (currentMode) {
+        if (currentMode.value === 'abv-from-ingredients') {
+            resetUnifiedABVMode();
+        } else {
+            resetUnifiedTargetMode();
+        }
+    }
+    
+    // Reset Alcohol & Gravity Converter
+    const conversionInput = document.getElementById('conversion-input');
+    const conversionFromSelect = document.getElementById('conversion-from');
+    const conversionResult = document.getElementById('conversion-result');
+    
+    if (conversionInput) conversionInput.value = '';
+    if (conversionFromSelect) conversionFromSelect.selectedIndex = 0;
+    if (conversionResult) conversionResult.innerHTML = '';
+    
+    // Reset Unified Calculator
+    resetUnifiedABVMode();
+    resetUnifiedTargetMode();
+    
+    // Clear all conversion displays
+    document.querySelectorAll('.conversion-display').forEach(display => {
+        display.textContent = '';
+    });
+}
+
+// Reset Functions for Unified Calculator
+function resetUnifiedABVMode() {
+    // Clear all input fields
+    const batchSizeInput = document.getElementById('unified-batch-size');
+    const honeyAmountInput = document.getElementById('unified-honey-amount');
+    const honeyOzInput = document.getElementById('unified-honey-oz');
+    const ingredientsList = document.getElementById('unified-abv-ingredients-list');
+    const resultsDiv = document.getElementById('unified-abv-results');
+    const conversionDisplay = document.getElementById('unified-honey-conversion');
+    
+    if (batchSizeInput) batchSizeInput.value = '1';
+    if (honeyAmountInput) honeyAmountInput.value = '';
+    if (honeyOzInput) honeyOzInput.value = '';
+    
+    // Clear all dynamic ingredients
+    unifiedABVIngredients = [];
+    unifiedABVCounter = 0;
+    if (ingredientsList) ingredientsList.innerHTML = '';
+    
+    // Clear results
+    if (resultsDiv) resultsDiv.innerHTML = '<div style="color: #90ee90; margin-bottom: 15px;">Enter ingredients to see calculated ABV and gravity</div>';
+    
+    // Clear conversion displays
+    if (conversionDisplay) conversionDisplay.textContent = '';
+    
+    // Trigger calculation to update results with current values and units
+    calculateUnifiedABVMode();
+}
+
+function resetUnifiedTargetMode() {
+    // Clear all input fields
+    const targetABVInput = document.getElementById('unified-target-abv');
+    const targetBatchSizeInput = document.getElementById('unified-target-batch-size');
+    const ingredientsList = document.getElementById('unified-target-ingredients-list');
+    const resultsDiv = document.getElementById('unified-target-results');
+    const totalElement = document.getElementById('unified-total-percentage');
+    
+    if (targetABVInput) targetABVInput.value = '';
+    if (targetBatchSizeInput) targetBatchSizeInput.value = '1';
+    
+    // Clear all dynamic ingredients
+    unifiedTargetIngredients = [];
+    unifiedTargetCounter = 0;
+    if (ingredientsList) ingredientsList.innerHTML = '';
+    
+    // Reset percentage display
+    if (totalElement) {
+        totalElement.textContent = '0';
+        totalElement.style.color = '#ffffff';
+    }
+    
+    // Clear results
+    if (resultsDiv) resultsDiv.innerHTML = '<div style="color: #90ee90; margin-bottom: 15px;">Enter target ABV and ingredients to see required amounts</div>';
+    
+    // Add default honey ingredient back (only if the list exists)
+    if (ingredientsList) {
+        setTimeout(() => {
+            addUnifiedTargetIngredient();
+            if (unifiedTargetIngredients.length === 1) {
+                unifiedTargetIngredients[0].percentage = 100;
+                const input = document.querySelector(`#${unifiedTargetIngredients[0].id} .ingredient-percentage`);
+                if (input) input.value = '100';
+                updateUnifiedTargetTotalPercentage();
+            }
+            // Trigger calculation to update results with current values and units
+            calculateUnifiedTargetMode();
+        }, 100);
+    }
+}
+
 // Input validation and formatting
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize unit displays
     updateWeightUnits();
     updateVolumeUnits();
     
-    // Initialize default ingredient for Target ABV section
-    initializeDefaultIngredient();
+    // Simple direct event listeners for unified calculator
+    const batchSizeInput = document.getElementById('unified-batch-size');
+    const honeyAmountInput = document.getElementById('unified-honey-amount');
+    const honeyOzInput = document.getElementById('unified-honey-oz');
+    const addBtn = document.getElementById('unified-abv-add-ingredient-btn');
+    const resetBtn = document.getElementById('unified-abv-reset-btn');
     
-    // Add event listener for "Add Ingredient" button
-    document.getElementById('add-ingredient-btn').addEventListener('click', addIngredient);
+    if (batchSizeInput) {
+        batchSizeInput.addEventListener('input', calculateUnifiedABVMode);
+    }
+    if (honeyAmountInput) {
+        honeyAmountInput.addEventListener('input', calculateUnifiedABVMode);
+    }
+    if (honeyOzInput) {
+        honeyOzInput.addEventListener('input', function() {
+            handleUnifiedWeightOverflow(this, 'unified-honey-amount');
+            calculateUnifiedABVMode();
+        });
+    }
+    if (addBtn) {
+        addBtn.addEventListener('click', addUnifiedABVIngredient);
+    }
+    if (resetBtn) {
+        resetBtn.addEventListener('click', resetUnifiedABVMode);
+    }
+    
+    // Mode switching
+    const modeRadios = document.querySelectorAll('input[name="calc-mode"]');
+    modeRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            if (this.value === 'ingredients-from-abv') {
+                renderUnifiedCalculator('ingredients-from-abv');
+            } else {
+                // We're already in ABV mode, just reset
+                resetUnifiedABVMode();
+            }
+        });
+    });
+    
+    // Initial calculation
+    calculateUnifiedABVMode();
     
     // Add input event listeners for ABV calculation with real-time updates
     const gravityInputs = ['og', 'fg'];
@@ -773,48 +1747,59 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Add event listeners for SG calculation inputs
-    const sgInputs = ['batch-size', 'fruit-type'];
-    sgInputs.forEach(id => {
-        const input = document.getElementById(id);
-        if (input) {
-            input.addEventListener('input', calculateSGRealTime);
-            input.addEventListener('change', calculateSGRealTime);
-        }
-    });
-    
-    // Add event listeners for Target ABV calculation inputs
-    const targetABVInputs = ['target-abv', 'target-batch-size'];
-    targetABVInputs.forEach(id => {
-        const input = document.getElementById(id);
-        if (input) {
-            input.addEventListener('input', calculateIngredientsRealTime);
-            input.addEventListener('change', calculateIngredientsRealTime);
-        }
-    });
     
     // Add double-click select all functionality to all input fields
     addSelectAllOnDoubleClick();
     
     // Add event listeners for conversion utility live updates
     addConversionEventListeners();
+    
+    // Mark initial load as complete
+    isInitialLoad = false;
 });
 
-// Function to add select-all-on-double-click to all input fields
+// Function to add smooth select-all functionality to all input fields
 function addSelectAllOnDoubleClick() {
     // Get all input elements of type number and text
-    const inputs = document.querySelectorAll('input[type="number"], input[type="text"]');
+    const inputs = document.querySelectorAll('input[type="number"], input[type="text"], select');
     
     inputs.forEach(input => {
+        if (input.tagName === 'SELECT') return; // Skip select elements
+        
         // Add double-click event listener for select all
-        input.addEventListener('dblclick', function() {
+        input.addEventListener('dblclick', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            this.focus();
             this.select();
+            // For mobile compatibility
+            this.setSelectionRange(0, this.value.length);
         });
         
-        // Prevent default double-click behavior that might interfere
-        input.addEventListener('mousedown', function(e) {
-            if (e.detail === 2) { // Double-click
+        // Add click event to select all when field has content
+        input.addEventListener('click', function(e) {
+            // Only select all if the field has content and isn't already focused
+            if (this.value !== '' && document.activeElement !== this) {
+                setTimeout(() => {
+                    this.select();
+                }, 10);
+            }
+        });
+        
+        // Ensure text selection works properly on focus
+        input.addEventListener('focus', function(e) {
+            if (this.value !== '') {
+                setTimeout(() => {
+                    this.select();
+                }, 10);
+            }
+        });
+        
+        // Prevent text selection issues on mouseup
+        input.addEventListener('mouseup', function(e) {
+            if (this.value !== '' && window.getSelection().toString() === '') {
                 e.preventDefault();
+                this.select();
             }
         });
     });

@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unified Brewing Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #2a2a2a;
+            color: #ffffff;
+            padding: 20px;
+        }
+
+        .calculator-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #3a3a3a;
+            border: 2px solid #d4af37;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .header {
+            background: #333;
+            padding: 20px;
+            border-bottom: 1px solid #d4af37;
+        }
+
+        .header h1 {
+            color: #d4af37;
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+
+        .units-selector {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 15px;
+        }
+
+        .unit-group {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .unit-group label {
+            color: #d4af37;
+            font-weight: 500;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .radio-group input[type="radio"] {
+            accent-color: #d4af37;
+        }
+
+        .main-selector {
+            background: #404040;
+            padding: 20px;
+            border-bottom: 1px solid #555;
+        }
+
+        .mode-selector {
+            margin-bottom: 20px;
+        }
+
+        .mode-selector h3 {
+            color: #d4af37;
+            margin-bottom: 10px;
+        }
+
+        .mode-options {
+            display: flex;
+            gap: 15px;
+        }
+
+        .mode-options label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 15px;
+            background: #2a2a2a;
+            border: 1px solid #555;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .mode-options label:hover {
+            border-color: #d4af37;
+        }
+
+        .mode-options input[type="radio"]:checked + span {
+            color: #d4af37;
+        }
+
+        .mode-options input[type="radio"] {
+            accent-color: #d4af37;
+        }
+
+        .content-area {
+            display: flex;
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .input-section, .results-section {
+            flex: 1;
+        }
+
+        .input-section {
+            background: #353535;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #555;
+        }
+
+        .results-section {
+            background: #2d5a3d;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #4a7c59;
+        }
+
+        .section-title {
+            color: #d4af37;
+            font-size: 18px;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        input[type="number"], input[type="text"], select {
+            background: #2a2a2a;
+            border: 1px solid #555;
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        input[type="number"]:focus, input[type="text"]:focus, select:focus {
+            outline: none;
+            border-color: #d4af37;
+        }
+
+        select {
+            background-color: #2a2a2a;
+        }
+
+        .ingredient-item {
+            background: #2a2a2a;
+            border: 1px solid #555;
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .ingredient-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .percentage-input {
+            width: 60px;
+        }
+
+        .remove-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .remove-btn:hover {
+            background: #c82333;
+        }
+
+        .add-ingredient-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        .add-ingredient-btn:hover {
+            background: #218838;
+        }
+
+        .results-item {
+            margin-bottom: 12px;
+            padding: 8px 0;
+            border-bottom: 1px solid #4a7c59;
+        }
+
+        .results-item:last-child {
+            border-bottom: none;
+        }
+
+        .results-label {
+            font-weight: 600;
+            color: #90ee90;
+        }
+
+        .results-value {
+            margin-top: 2px;
+        }
+
+        .ingredients-list {
+            margin-top: 15px;
+        }
+
+        .ingredients-list h4 {
+            color: #90ee90;
+            margin-bottom: 10px;
+        }
+
+        .ingredient-result {
+            background: #1e4a2a;
+            padding: 8px 12px;
+            border-radius: 4px;
+            margin-bottom: 5px;
+        }
+
+        .total-percentage {
+            margin-top: 15px;
+            padding: 10px;
+            background: #4a4a4a;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .percentage-warning {
+            color: #ffc107;
+        }
+
+        .percentage-error {
+            color: #dc3545;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .unit-suffix {
+            color: #888;
+            font-size: 12px;
+            margin-left: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator-container">
+        <div class="header">
+            <h1>Brewing Calculator</h1>
+            
+            <div class="units-selector">
+                <div class="unit-group">
+                    <label>Units:</label>
+                    <div class="radio-group">
+                        <input type="radio" id="imperial" name="units" value="imperial" checked>
+                        <label for="imperial">Imperial (lbs/oz)</label>
+                    </div>
+                    <div class="radio-group">
+                        <input type="radio" id="metric" name="units" value="metric">
+                        <label for="metric">Metric (kg/g)</label>
+                    </div>
+                </div>
+                
+                <div class="unit-group">
+                    <div class="radio-group">
+                        <input type="radio" id="gallons" name="volume" value="gallons" checked>
+                        <label for="gallons">Gallons</label>
+                    </div>
+                    <div class="radio-group">
+                        <input type="radio" id="liters" name="volume" value="liters">
+                        <label for="liters">Liters</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-selector">
+            <div class="mode-selector">
+                <h3>Calculation Mode:</h3>
+                <div class="mode-options">
+                    <label>
+                        <input type="radio" name="mode" value="target-abv" checked>
+                        <span>Calculate ABV from Ingredients</span>
+                    </label>
+                    <label>
+                        <input type="radio" name="mode" value="target-ingredients">
+                        <span>Calculate Ingredients for Target ABV</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="content-area">
+            <!-- ABV from Ingredients Mode -->
+            <div class="input-section" id="abv-mode">
+                <h3 class="section-title">Calculate ABV from Ingredients</h3>
+                
+                <div class="form-group">
+                    <label>Batch Size:</label>
+                    <div class="form-row">
+                        <input type="number" id="batch-size-abv" placeholder="1" value="1">
+                        <span class="unit-suffix" id="volume-unit-1">gallons</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Honey:</label>
+                    <div class="form-row">
+                        <input type="number" id="honey-amount" placeholder="2" value="2">
+                        <span class="unit-suffix" id="weight-unit-1">lbs</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Additional Ingredients:</label>
+                    <div id="ingredients-list-abv">
+                        <!-- Dynamic ingredient items will be added here -->
+                    </div>
+                    <button class="add-ingredient-btn" onclick="addIngredientABV()">+ Add Ingredient</button>
+                </div>
+            </div>
+
+            <!-- Target Ingredients Mode -->
+            <div class="input-section hidden" id="ingredients-mode">
+                <h3 class="section-title">Calculate Ingredients for Target ABV</h3>
+                
+                <div class="form-group">
+                    <label>Target ABV (%):</label>
+                    <input type="number" id="target-abv" placeholder="6" value="6" step="0.1">
+                </div>
+
+                <div class="form-group">
+                    <label>Batch Size:</label>
+                    <div class="form-row">
+                        <input type="number" id="batch-size-ingredients" placeholder="1" value="1">
+                        <span class="unit-suffix" id="volume-unit-2">gallons</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Honey Percentage (%):</label>
+                    <input type="number" id="honey-percentage" placeholder="80" value="80" min="0" max="100">
+                </div>
+
+                <div class="form-group">
+                    <label>Additional Ingredients:</label>
+                    <div id="ingredients-list-target">
+                        <!-- Dynamic ingredient items will be added here -->
+                    </div>
+                    <button class="add-ingredient-btn" onclick="addIngredientTarget()">+ Add Ingredient</button>
+                    
+                    <div class="total-percentage">
+                        <strong>Total Percentage: <span id="total-percentage">80%</span></strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Section -->
+            <div class="results-section">
+                <h3 class="section-title">Results</h3>
+                
+                <div id="abv-results">
+                    <div class="results-item">
+                        <div class="results-label">Estimated Original Gravity:</div>
+                        <div class="results-value" id="original-gravity">1.080</div>
+                    </div>
+                    <div class="results-item">
+                        <div class="results-label">Potential ABV:</div>
+                        <div class="results-value" id="potential-abv">10.44%</div>
+                    </div>
+                    <div class="results-item">
+                        <div class="results-label">Total Fermentable Sugar:</div>
+                        <div class="results-value" id="total-sugar">1 lbs 12 oz</div>
+                    </div>
+                    <div class="results-item">
+                        <div class="results-label">Sugar Concentration:</div>
+                        <div class="results-value" id="sugar-concentration">27.7 oz per gallon</div>
+                    </div>
+                    
+                    <div class="ingredients-list">
+                        <h4>Ingredients Used:</h4>
+                        <div class="ingredient-result">2 lbs honey (1 lbs 10 oz fermentable sugar)</div>
+                        <div class="ingredient-result">1 lbs Apple (fresh) (2 oz fermentable sugar)</div>
+                    </div>
+                </div>
+
+                <div id="target-results" class="hidden">
+                    <div class="results-item">
+                        <div class="results-label">Target Original Gravity:</div>
+                        <div class="results-value" id="target-og">1.046</div>
+                    </div>
+                    <div class="results-item">
+                        <div class="results-label">Total Fermentable Sugar Needed:</div>
+                        <div class="results-value" id="sugar-needed">119 g</div>
+                    </div>
+                    
+                    <div class="ingredients-list">
+                        <h4>Required Ingredients:</h4>
+                        <div class="ingredient-result">149 g Honey (100% of fermentables)</div>
+                        <div class="ingredient-result">119 g fermentable sugar</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let ingredientCounterABV = 0;
+        let ingredientCounterTarget = 0;
+
+        // Unit switching
+        document.querySelectorAll('input[name="units"]').forEach(radio => {
+            radio.addEventListener('change', updateUnits);
+        });
+
+        document.querySelectorAll('input[name="volume"]').forEach(radio => {
+            radio.addEventListener('change', updateVolumeUnits);
+        });
+
+        // Mode switching
+        document.querySelectorAll('input[name="mode"]').forEach(radio => {
+            radio.addEventListener('change', switchMode);
+        });
+
+        function updateUnits() {
+            const isMetric = document.getElementById('metric').checked;
+            const weightUnit = isMetric ? 'kg' : 'lbs';
+            
+            document.querySelectorAll('[id^="weight-unit-"]').forEach(span => {
+                span.textContent = weightUnit;
+            });
+        }
+
+        function updateVolumeUnits() {
+            const isLiters = document.getElementById('liters').checked;
+            const volumeUnit = isLiters ? 'liters' : 'gallons';
+            
+            document.querySelectorAll('[id^="volume-unit-"]').forEach(span => {
+                span.textContent = volumeUnit;
+            });
+        }
+
+        function switchMode() {
+            const isTargetABV = document.querySelector('input[name="mode"]:checked').value === 'target-abv';
+            
+            document.getElementById('abv-mode').classList.toggle('hidden', !isTargetABV);
+            document.getElementById('ingredients-mode').classList.toggle('hidden', isTargetABV);
+            document.getElementById('abv-results').classList.toggle('hidden', !isTargetABV);
+            document.getElementById('target-results').classList.toggle('hidden', isTargetABV);
+        }
+
+        function addIngredientABV() {
+            ingredientCounterABV++;
+            const container = document.getElementById('ingredients-list-abv');
+            const isMetric = document.getElementById('metric').checked;
+            const weightUnit = isMetric ? 'kg' : 'lbs';
+            
+            const ingredientHTML = `
+                <div class="ingredient-item" id="ingredient-abv-${ingredientCounterABV}">
+                    <div class="ingredient-controls">
+                        <select>
+                            <option>Apple (fresh)</option>
+                            <option>Blueberry</option>
+                            <option>Grape</option>
+                            <option>Cherry</option>
+                            <option>Raspberry</option>
+                        </select>
+                        <input type="number" placeholder="Amount" step="0.1">
+                        <span class="unit-suffix">${weightUnit}</span>
+                    </div>
+                    <button class="remove-btn" onclick="removeIngredient('ingredient-abv-${ingredientCounterABV}')">Remove</button>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', ingredientHTML);
+        }
+
+        function addIngredientTarget() {
+            ingredientCounterTarget++;
+            const container = document.getElementById('ingredients-list-target');
+            
+            const ingredientHTML = `
+                <div class="ingredient-item" id="ingredient-target-${ingredientCounterTarget}">
+                    <div class="ingredient-controls">
+                        <select>
+                            <option>Apple (fresh)</option>
+                            <option>Blueberry</option>
+                            <option>Grape</option>
+                            <option>Cherry</option>
+                            <option>Raspberry</option>
+                        </select>
+                        <input type="number" class="percentage-input" placeholder="%" min="0" max="100" step="0.1" onchange="updateTotalPercentage()">
+                        <span>%</span>
+                    </div>
+                    <button class="remove-btn" onclick="removeIngredient('ingredient-target-${ingredientCounterTarget}'); updateTotalPercentage();">Remove</button>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', ingredientHTML);
+        }
+
+        function removeIngredient(id) {
+            document.getElementById(id).remove();
+        }
+
+        function updateTotalPercentage() {
+            const honeyPercentage = parseFloat(document.getElementById('honey-percentage').value) || 0;
+            const ingredientInputs = document.querySelectorAll('#ingredients-list-target .percentage-input');
+            
+            let total = honeyPercentage;
+            ingredientInputs.forEach(input => {
+                total += parseFloat(input.value) || 0;
+            });
+            
+            const totalSpan = document.getElementById('total-percentage');
+            totalSpan.textContent = total.toFixed(1) + '%';
+            
+            // Color coding for percentage validation
+            totalSpan.className = '';
+            if (total > 100) {
+                totalSpan.classList.add('percentage-error');
+            } else if (total > 95) {
+                totalSpan.classList.add('percentage-warning');
+            }
+        }
+
+        // Initialize
+        document.getElementById('honey-percentage').addEventListener('input', updateTotalPercentage);
+        
+        // Initialize units
+        updateUnits();
+        updateVolumeUnits();
+    </script>
+</body>
+</html>
