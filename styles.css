@@ -112,7 +112,8 @@ header p {
 }
 
 .oz-input {
-    max-width: 80px;
+    width: 80px;
+    /* Inherits standardized styles from input[type] rules above */
 }
 
 .conversion-display {
@@ -148,71 +149,25 @@ header p {
 
 .ingredient-type {
     flex: 2;
-    padding: 10px 14px;
-    border: 1px solid #d4af37;
-    border-radius: 6px;
-    font-size: 16px;
-    background: #1a1a1a;
-    color: #ffffff;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    /* Inherits standardized styles from input[type] rules above */
 }
 
-.ingredient-type:focus {
-    outline: none;
-    border-color: #ffd700;
-    box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.2);
-}
+/* Focus styles now handled by global input[type]:focus rules */
 
 .ingredient-percentage {
     width: 80px;
-    padding: 10px 14px;
-    border: 1px solid #d4af37;
-    border-radius: 6px;
-    font-size: 16px;
     text-align: center;
-    background: #1a1a1a;
-    color: #ffffff;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
-}
-
-.ingredient-percentage:focus {
-    outline: none;
-    border-color: #ffd700;
-    box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.2);
+    /* Inherits standardized styles from input[type] rules above */
 }
 
 .ingredient-amount {
     flex: 1;
-    padding: 10px 14px;
-    border: 1px solid #d4af37;
-    border-radius: 6px;
-    font-size: 16px;
-    background: #1a1a1a;
-    color: #ffffff;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
-}
-
-.ingredient-amount:focus {
-    outline: none;
-    border-color: #ffd700;
-    box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.2);
+    /* Inherits standardized styles from input[type] rules above */
 }
 
 .ingredient-oz {
     width: 80px;
-    padding: 10px 14px;
-    border: 1px solid #d4af37;
-    border-radius: 6px;
-    font-size: 16px;
-    background: #1a1a1a;
-    color: #ffffff;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
-}
-
-.ingredient-oz:focus {
-    outline: none;
-    border-color: #ffd700;
-    box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.2);
+    /* Inherits standardized styles from input[type] rules above */
 }
 
 .percentage-symbol {
@@ -396,20 +351,31 @@ header p {
     color: #ffffff;
 }
 
-.input-group input,
-.input-group select {
-    width: 100%;
-    padding: 10px 14px;
+/* Standardized input sizing for all input elements */
+input[type="number"],
+input[type="text"],
+select {
+    padding: 12px 16px;
     border: 1px solid #d4af37;
     border-radius: 6px;
     font-size: 16px;
+    line-height: 1.5;
+    min-height: 48px;
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
     background: #1a1a1a;
     color: #ffffff;
+    box-sizing: border-box;
 }
 
-.input-group input:focus,
-.input-group select:focus {
+.input-group input,
+.input-group select {
+    width: 100%;
+}
+
+/* Standardized focus styles for all inputs */
+input[type="number"]:focus,
+input[type="text"]:focus,
+select:focus {
     outline: none;
     border-color: #ffd700;
     box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.2);
