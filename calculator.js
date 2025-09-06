@@ -511,11 +511,29 @@ function handleWeightInputChange(event) {
 
 // Calculate ABV from OG and FG
 function calculateABV() {
-    const og = parseFloat(document.getElementById('og').value);
-    const fg = parseFloat(document.getElementById('fg').value);
+    const ogInput = document.getElementById('og');
+    const fgInput = document.getElementById('fg');
     
-    if (!og || !fg) {
+    if (!ogInput || !fgInput) {
+        console.error('Could not find OG or FG input elements');
+        return;
+    }
+    
+    const ogValue = ogInput.value.trim();
+    const fgValue = fgInput.value.trim();
+    
+    // Check if both fields have values
+    if (ogValue === '' || fgValue === '') {
         document.getElementById('abv-result').innerHTML = '<div class="info">Enter both Original Gravity and Final Gravity to see ABV results</div>';
+        return;
+    }
+    
+    const og = parseFloat(ogValue);
+    const fg = parseFloat(fgValue);
+    
+    // Check if values are valid numbers
+    if (isNaN(og) || isNaN(fg)) {
+        document.getElementById('abv-result').innerHTML = '<div class="error">Please enter valid numeric values</div>';
         return;
     }
     
@@ -540,16 +558,26 @@ function calculateABV() {
 
 // Real-time ABV calculation
 function calculateABVRealTime() {
-    // Only calculate if we have valid inputs to avoid constant error messages
-    const og = parseFloat(document.getElementById('og').value);
-    const fg = parseFloat(document.getElementById('fg').value);
-    
-    if (!og && !fg) {
-        document.getElementById('abv-result').innerHTML = '';
-        return;
-    }
-    
+    // Always call calculateABV - it will handle empty/invalid inputs appropriately
     calculateABV();
+}
+
+// Test function for debugging (can be called from console)
+function testABVCalculator() {
+    console.log('Testing ABV Calculator...');
+    console.log('OG element:', document.getElementById('og'));
+    console.log('FG element:', document.getElementById('fg'));
+    console.log('Result element:', document.getElementById('abv-result'));
+    
+    // Set test values
+    const ogInput = document.getElementById('og');
+    const fgInput = document.getElementById('fg');
+    if (ogInput && fgInput) {
+        ogInput.value = '1.090';
+        fgInput.value = '1.000';
+        console.log('Values set - OG:', ogInput.value, 'FG:', fgInput.value);
+        calculateABV();
+    }
 }
 
 // Calculate specific gravity from ingredients
@@ -1765,7 +1793,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (value < 0.900 || value > 1.300) {
                     this.style.borderColor = '#ff6b6b';
                 } else {
-                    this.style.borderColor = '#ddd';
+                    this.style.borderColor = '#d4af37';
                 }
                 
                 // Trigger real-time ABV calculation
