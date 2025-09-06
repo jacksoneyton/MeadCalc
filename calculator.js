@@ -1135,10 +1135,18 @@ function calculateUnifiedABVMode() {
                         displayAmount = ing.amount * LBS_TO_KG;
                     }
                     
+                    // Format weight using smart display
+                    let formattedWeight;
+                    if (currentWeightUnit === 'imperial') {
+                        formattedWeight = displayImperialWeight(displayAmount);
+                    } else {
+                        formattedWeight = displayMetricWeight(displayAmount);
+                    }
+                    
                     return `
                         <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
                             <span>${ing.name}:</span>
-                            <span>${displayAmount.toFixed(2)} ${weightUnit} (${pointsDisplay} pts)</span>
+                            <span>${formattedWeight} (${pointsDisplay} pts)</span>
                         </div>
                     `;
                 }).join('')}
@@ -1157,7 +1165,7 @@ function calculateUnifiedABVMode() {
         </div>
         <div style="margin-bottom: 15px; padding: 10px; background: rgba(255, 255, 255, 0.05); border-radius: 6px; border-left: 3px solid #d4af37;">
             <div style="font-weight: 600; color: #90ee90; margin-bottom: 4px;">Total Weight per ${volumeUnit.charAt(0).toUpperCase() + volumeUnit.slice(1)}:</div>
-            <div style="font-size: 1.1rem; color: #ffffff;">${displayWeightPerVolume.toFixed(2)} ${weightUnit}</div>
+            <div style="font-size: 1.1rem; color: #ffffff;">${currentWeightUnit === 'imperial' ? displayImperialWeight(displayWeightPerVolume) : displayMetricWeight(displayWeightPerVolume)}</div>
         </div>
         ${breakdownHtml}
     `;
@@ -1289,7 +1297,7 @@ function calculateUnifiedTargetMode() {
         </div>
         <div style="margin-bottom: 15px; padding: 10px; background: rgba(255, 255, 255, 0.05); border-radius: 6px; border-left: 3px solid #d4af37;">
             <div style="font-weight: 600; color: #90ee90; margin-bottom: 4px;">Total Weight per ${volumeUnit.charAt(0).toUpperCase() + volumeUnit.slice(1)}:</div>
-            <div style="font-size: 1.1rem; color: #ffffff;">${displayWeightPerVolume.toFixed(2)} ${weightUnit}</div>
+            <div style="font-size: 1.1rem; color: #ffffff;">${currentWeightUnit === 'imperial' ? displayImperialWeight(displayWeightPerVolume) : displayMetricWeight(displayWeightPerVolume)}</div>
         </div>
         <div style="margin-bottom: 15px; padding: 10px; background: rgba(255, 255, 255, 0.05); border-radius: 6px; border-left: 3px solid #d4af37;">
             <div style="font-weight: 600; color: #90ee90; margin-bottom: 12px;">Required Ingredients:</div>
