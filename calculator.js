@@ -89,7 +89,19 @@ function convertGallonsToDisplayVolume(gallons, unit = currentVolumeUnit) {
 
 function displayMetricWeight(kg) {
     if (kg >= 1) {
-        return `${kg.toFixed(2)} kg`;
+        const wholeKg = Math.floor(kg);
+        const remainderKg = kg - wholeKg;
+        const grams = Math.round(remainderKg * 1000);
+        
+        if (wholeKg === 0 && grams === 0) {
+            return "0 g";
+        } else if (grams === 0) {
+            return `${wholeKg} kg`;
+        } else if (wholeKg === 0) {
+            return `${grams} g`;
+        } else {
+            return `${wholeKg} kg ${grams} g`;
+        }
     } else {
         const grams = kg * 1000;
         return `${grams.toFixed(0)} g`;
@@ -1248,18 +1260,27 @@ function calculateUnifiedTargetMode() {
     }
     
     // Display results
-    let ingredientsHtml = ingredientResults.map(ing => `
+    let ingredientsHtml = ingredientResults.map(ing => {
+        let formattedAmount;
+        if (currentWeightUnit === 'imperial') {
+            formattedAmount = displayImperialWeight(ing.amount);
+        } else {
+            formattedAmount = displayMetricWeight(ing.amount);
+        }
+        
+        return `
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding: 8px; background: rgba(255, 255, 255, 0.03); border-radius: 4px;">
             <div>
                 <div style="font-weight: 500; color: #ffffff;">${ing.name}</div>
                 <small style="color: #cccccc;">${ing.percentage}% of total fermentables</small>
             </div>
             <div style="text-align: right;">
-                <div style="font-size: 1.1rem; color: #d4af37;">${ing.amount.toFixed(2)} ${ing.unit}</div>
+                <div style="font-size: 1.1rem; color: #d4af37;">${formattedAmount}</div>
                 <small style="color: #cccccc;">${(ing.ppg/10).toFixed(0)} pts contribution</small>
             </div>
         </div>
-    `).join('');
+        `;
+    }).join('');
     
     resultsDiv.innerHTML = `
         <div style="margin-bottom: 15px; padding: 10px; background: rgba(255, 255, 255, 0.05); border-radius: 6px; border-left: 3px solid #d4af37;">
