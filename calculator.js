@@ -1070,6 +1070,13 @@ function calculateUnifiedABVMode() {
                         const ozValue = parseFloat(ozInput.value) || 0;
                         amount += (ozValue / 16);
                     }
+                } else {
+                    // Add grams if in metric mode
+                    const gInput = document.getElementById(`${ingredient.id}-oz`);
+                    if (gInput) {
+                        const gValue = parseFloat(gInput.value) || 0;
+                        amount += (gValue / 1000); // Convert grams to kg
+                    }
                 }
                 
                 // Only proceed if there's a meaningful amount
