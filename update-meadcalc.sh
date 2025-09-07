@@ -21,17 +21,53 @@ log_error() { echo -e "${RED}[ERROR]${NC} $1"; }
 
 # Configuration
 GITHUB_REPO="https://raw.githubusercontent.com/jacksoneyton/MeadCalc/master"
+GITHUB_API="https://api.github.com/repos/jacksoneyton/MeadCalc/contents"
 WEB_ROOT="/var/www/meadcalc"
 BACKUP_DIR="/var/www/meadcalc-backups"
 TEMP_DIR="/tmp/meadcalc-update"
 
-# Files to download and update
-FILES=(
-    "index.html"
-    "styles.css"
-    "calculator.js"
-    "MeadCalc_logo.png"
-)
+# Get list of web files from GitHub repository
+get_web_files() {
+    # Define web file extensions we want to include
+    local web_extensions=("html" "css" "js" "png" "jpg" "jpeg" "gif" "svg" "ico" "woff" "woff2" "ttf" "json")
+    local files=()
+    
+    log_info "Discovering web files from repository..."
+    
+    # Get repository contents from GitHub API
+    local repo_contents
+    if repo_contents=$(curl -s "$GITHUB_API" 2>/dev/null); then
+        # Parse JSON to get file names (works without jq)
+        while IFS= read -r line; do
+            # Extract filename from JSON line containing "name"
+            if [[ $line =~ \"name\":[[:space:]]*\"([^\"]+)\" ]]; then
+                local filename="${BASH_REMATCH[1]}"
+                local extension="${filename##*.}"
+                
+                # Check if file has a web extension
+                for web_ext in "${web_extensions[@]}"; do
+                    if [[ "$extension" == "$web_ext" ]]; then
+                        files+=("$filename")
+                        break
+                    fi
+                done
+            fi
+        done <<< "$repo_contents"
+    fi
+    
+    # Fallback to hardcoded list if API fails
+    if [[ ${#files[@]} -eq 0 ]]; then
+        log_warning "Could not fetch file list from GitHub API, using fallback list"
+        files=("index.html" "styles.css" "calculator.js" "MeadCalc_logo.png")
+    else
+        log_success "Discovered ${#files[@]} web files from repository"
+    fi
+    
+    printf '%s\n' "${files[@]}"
+}
+
+# Get dynamic file list
+mapfile -t FILES < <(get_web_files)
 
 echo "🔄 MeadCalc Update Script"
 echo "========================"
@@ -41,6 +77,14 @@ if [[ $EUID -ne 0 ]]; then
     log_error "This script must be run as root or with sudo"
     exit 1
 fi
+
+# Check for required commands
+for cmd in wget curl; do
+    if ! command -v "$cmd" >/dev/null 2>&1; then
+        log_error "Required command '$cmd' not found. Please install it first."
+        exit 1
+    fi
+done
 
 # Check if web directory exists
 if [ ! -d "$WEB_ROOT" ]; then
@@ -84,7 +128,8 @@ for file in "${FILES[@]}"; do
 done
 
 # Verify critical files were downloaded
-for file in "index.html" "styles.css" "calculator.js"; do
+critical_files=("index.html" "styles.css" "calculator.js")
+for file in "${critical_files[@]}"; do
     if [ ! -f "$file" ]; then
         log_error "Critical file $file is missing"
         exit 1
