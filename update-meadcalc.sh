@@ -61,17 +61,6 @@ get_web_files_silent() {
     printf '%s\n' "${files[@]}"
 }
 
-# Get dynamic file list with proper logging
-log_info "Discovering web files from repository..."
-mapfile -t FILES < <(get_web_files_silent)
-
-# Log the results
-if [[ ${#FILES[@]} -gt 4 ]]; then
-    log_success "Discovered ${#FILES[@]} web files from repository"
-else
-    log_warning "Using fallback file list"
-fi
-
 echo "🔄 MeadCalc Update Script"
 echo "========================"
 
@@ -94,6 +83,17 @@ if [ ! -d "$WEB_ROOT" ]; then
     log_error "MeadCalc directory not found at $WEB_ROOT"
     log_error "Please ensure MeadCalc is installed first"
     exit 1
+fi
+
+# Get dynamic file list with proper logging
+log_info "Discovering web files from repository..."
+mapfile -t FILES < <(get_web_files_silent)
+
+# Log the results
+if [[ ${#FILES[@]} -gt 4 ]]; then
+    log_success "Discovered ${#FILES[@]} web files from repository"
+else
+    log_warning "Using fallback file list"
 fi
 
 # Create backup directory if it doesn't exist
