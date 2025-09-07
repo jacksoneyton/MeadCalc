@@ -1966,13 +1966,13 @@ function calculateAllConversions(inputValue, fromUnit) {
     if (fromUnit === 'abv') {
         abv = inputValue;
         abw = abv * (CONVERSION_CONSTANTS.ALCOHOL_DENSITY / CONVERSION_CONSTANTS.WATER_DENSITY);
-        // Convert ABV to SG for other conversions (approximate)
-        sg = 1 + (abv / ABV_FACTOR / 1000);
+        // Convert ABV to original gravity (starting gravity needed to achieve this ABV)
+        sg = 1.000 + (abv / ABV_FACTOR);
     } else if (fromUnit === 'abw') {
         abw = inputValue;
         abv = abw * (CONVERSION_CONSTANTS.WATER_DENSITY / CONVERSION_CONSTANTS.ALCOHOL_DENSITY);
-        // Convert ABV to SG for other conversions (approximate)
-        sg = 1 + (abv / ABV_FACTOR / 1000);
+        // Convert ABV to original gravity (starting gravity needed to achieve this ABV)
+        sg = 1.000 + (abv / ABV_FACTOR);
     } else {
         // For gravity-based units, convert to SG first
         switch(fromUnit) {

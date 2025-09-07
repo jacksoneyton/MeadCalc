@@ -130,12 +130,12 @@
                 
                 <div class="input-group">
                     <label for="conversion-input">Value:</label>
-                    <input type="number" id="conversion-input" step="0.001" placeholder="Enter value">
+                    <input type="number" id="conversion-input" step="0.001" placeholder="Enter value" oninput="performConversion()" onchange="performConversion()">
                 </div>
                 
                 <div class="input-group">
                     <label for="conversion-from">Convert From:</label>
-                    <select id="conversion-from">
+                    <select id="conversion-from" onchange="performConversion()">
                         <option value="abv">ABV (%)</option>
                         <option value="abw">ABW (%)</option>
                         <option value="sg">Specific Gravity (SG)</option>
