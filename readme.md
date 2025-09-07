@@ -163,6 +163,16 @@ If you prefer to run MeadCalc without Proxmox:
 
 ---
 
+## ☕ Support the Project
+
+Enjoying MeadCalc? Consider supporting its development:
+
+[![Buy Me A Coffee](https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png)](https://buymeacoffee.com/jacksoneyton)
+
+Your support helps keep MeadCalc free and continuously improved for the brewing community!
+
+---
+
 ## 📌 Roadmap
 
 See [`future-features.md`](future-features.md) for planned enhancements and upcoming features.
@@ -170,4 +180,5 @@ See [`future-features.md`](future-features.md) for planned enhancements and upco
 ---
 
 **Author:** [jacksoneyton](https://github.com/jacksoneyton)  
-**Repository:** [MeadCalc](https://github.com/jacksoneyton/MeadCalc)
+**Repository:** [MeadCalc](https://github.com/jacksoneyton/MeadCalc)  
+**Live Site:** [MeadCalc.com](https://meadcalc.com)
