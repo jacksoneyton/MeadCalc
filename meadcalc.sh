@@ -254,7 +254,7 @@ get_web_files() {
     local web_extensions=("html" "css" "js" "png" "jpg" "jpeg" "gif" "svg" "ico" "woff" "woff2" "ttf" "json")
     local files=()
     
-    log_info "Discovering web files from repository..."
+    log_info "Discovering web files from repository..." >&2
     
     # Get repository contents from GitHub API
     local repo_contents
@@ -279,10 +279,10 @@ get_web_files() {
     
     # Fallback to hardcoded list if API fails
     if [[ ${#files[@]} -eq 0 ]]; then
-        log_warning "Could not fetch file list from GitHub API, using fallback list"
+        log_warning "Could not fetch file list from GitHub API, using fallback list" >&2
         files=("index.html" "styles.css" "calculator.js" "MeadCalc_logo.png")
     else
-        log_success "Discovered ${#files[@]} web files from repository"
+        log_success "Discovered ${#files[@]} web files from repository" >&2
     fi
     
     printf '%s\n' "${files[@]}"
