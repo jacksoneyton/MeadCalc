@@ -117,7 +117,8 @@ log_info "Downloading latest files from GitHub..."
 for file in "${FILES[@]}"; do
     log_info "Downloading $file..."
     if wget -q "$GITHUB_REPO/$file" -O "$file"; then
-        log_success "Downloaded $file"
+        file_size=$(stat -c%s "$file" 2>/dev/null || echo "0")
+        log_success "Downloaded $file (${file_size} bytes)"
     else
         # Handle optional files (like logo)
         if [[ "$file" == "MeadCalc_logo.png" ]]; then
@@ -129,6 +130,10 @@ for file in "${FILES[@]}"; do
         fi
     fi
 done
+
+# List downloaded files for debugging
+log_info "Files in temp directory:"
+ls -la "$TEMP_DIR"
 
 # Verify critical files were downloaded
 critical_files=("index.html" "styles.css" "calculator.js")
@@ -144,7 +149,16 @@ log_info "Installing updated files..."
 for file in "${FILES[@]}"; do
     if [ -f "$file" ]; then
         cp "$file" "$WEB_ROOT/"
-        log_info "Updated $file"
+        log_success "Updated $file"
+        # Verify the copy worked
+        if [ -f "$WEB_ROOT/$file" ]; then
+            target_size=$(stat -c%s "$WEB_ROOT/$file" 2>/dev/null || echo "0")
+            log_info "Verified $file in web directory (${target_size} bytes)"
+        else
+            log_error "Failed to copy $file to web directory"
+        fi
+    else
+        log_warning "File $file not found in temp directory, skipping"
     fi
 done
 
