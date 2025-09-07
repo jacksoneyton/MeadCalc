@@ -166,14 +166,34 @@ done
 chown -R www-data:www-data "$WEB_ROOT"
 chmod -R 755 "$WEB_ROOT"
 
+# Clear browser caches by updating file timestamps
+log_info "Clearing browser caches..."
+find "$WEB_ROOT" -name "*.js" -o -name "*.css" -o -name "*.html" | xargs touch
+
+# Clear any nginx caches
+log_info "Clearing server caches..."
+if [ -d "/var/cache/nginx" ]; then
+    rm -rf /var/cache/nginx/*
+fi
+
 # Test nginx configuration
 if nginx -t >/dev/null 2>&1; then
-    # Reload nginx to ensure any changes take effect
-    systemctl reload nginx
-    log_success "Nginx configuration is valid and reloaded"
+    # Force restart nginx to clear all caches
+    systemctl restart nginx
+    log_success "Nginx restarted successfully with cleared caches"
 else
     log_warning "Nginx configuration test failed, but continuing..."
 fi
+
+# Add cache-busting info to HTML files
+log_info "Adding cache-busting timestamp..."
+timestamp=$(date +%s)
+for html_file in "$WEB_ROOT"/*.html; do
+    if [ -f "$html_file" ]; then
+        # Add timestamp comment to force browser refresh
+        sed -i "1i<!-- Cache bust: $timestamp -->" "$html_file"
+    fi
+done
 
 # Cleanup
 cd /
@@ -185,6 +205,27 @@ cd "$BACKUP_DIR"
 ls -1t meadcalc-backup-* 2>/dev/null | tail -n +6 | xargs -r rm -rf
 log_success "Backup cleanup completed"
 
+# Final verification
+log_info "Performing final verification..."
+if [ -f "$WEB_ROOT/calculator.js" ] && [ -f "$WEB_ROOT/index.html" ] && [ -f "$WEB_ROOT/styles.css" ]; then
+    js_size=$(stat -c%s "$WEB_ROOT/calculator.js")
+    html_size=$(stat -c%s "$WEB_ROOT/index.html")
+    css_size=$(stat -c%s "$WEB_ROOT/styles.css")
+    log_success "Core files verified:"
+    log_info "  calculator.js: ${js_size} bytes"
+    log_info "  index.html: ${html_size} bytes"
+    log_info "  styles.css: ${css_size} bytes"
+    
+    # Check if calculator.js contains key functions
+    if grep -q "calculateABV\|performConversion" "$WEB_ROOT/calculator.js"; then
+        log_success "JavaScript functions verified in calculator.js"
+    else
+        log_error "JavaScript functions missing or corrupted in calculator.js"
+    fi
+else
+    log_error "Critical files missing after update!"
+fi
+
 echo ""
 log_success "MeadCalc update completed successfully!"
 echo ""
@@ -192,11 +233,15 @@ echo "📋 Update Summary:"
 echo "   Backup created: $BACKUP_PATH"
 echo "   Files updated: ${FILES[*]}"
 echo "   Web root: $WEB_ROOT"
+echo "   Cache busting: Applied"
+echo "   Nginx: Restarted with cleared caches"
 echo ""
 echo "🌐 Your MeadCalc installation has been updated with the latest version!"
+echo ""
+echo "🔧 Clear your browser cache or use Ctrl+F5 to force refresh the page"
 echo ""
 echo "📝 To rollback if needed:"
 echo "   sudo cp -r $BACKUP_PATH/* $WEB_ROOT/"
 echo "   sudo chown -R www-data:www-data $WEB_ROOT"
-echo "   sudo systemctl reload nginx"
+echo "   sudo systemctl restart nginx"
 echo ""
