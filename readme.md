@@ -2,9 +2,20 @@
 
 MeadCalc is a comprehensive, browser-based **mead brewing calculator** with smart unit conversion. It helps brewers calculate sugar additions for desired alcohol content, batch size, and sweetness level with support for both imperial and metric measurements.
 
-**🌐 [Try MeadCalc](http://meadcalc.ddns.net)**
+**🌐 [Try MeadCalc](https://meadcalc.com/)**
 
-![MeadCalc Screenshot](MeadCalc_ScreenShot.png)
+![MeadCalc Screenshot](ScreenShot.png)
+
+## 🆕 Recent Updates
+
+### 🎉 Latest Enhancements (Latest Release)
+- 📱 **Fixed Mobile Portrait Layout**: Resolved calculator layout issues on mobile devices in portrait orientation
+- 🎯 **Universal Input Selection**: All input fields now auto-select text on click/tap for effortless data entry
+- 🔄 **Improved Calculator Switching**: Seamless mode transitions between "Calculate ABV from Ingredients" and "Calculate Ingredients for Target ABV"
+- ⚡ **Enhanced Mobile UX**: Optimized touch interactions and responsive design across all screen sizes
+- ☁️ **Cloudflare Pages Integration**: Now deployed on https://meadcalc.com/ with lightning-fast global performance
+
+---
 
 ## ✨ Features
 
@@ -18,7 +29,7 @@ MeadCalc is a comprehensive, browser-based **mead brewing calculator** with smar
 - ⚖️ **Imperial Support**: Pounds, ounces, and gallons with intelligent lbs/oz display (e.g., "1 lbs 7 oz")
 - 🌐 **Metric Support**: Kilograms, grams, and liters with smart display (e.g., "120 g" vs "1.25 kg")
 - 🔄 **Live Conversion**: Real-time switching between measurement systems
-- 📱 **Double-Click Select**: Easy input field selection for quick value replacement
+- 📱 **Universal Input Selection**: Click/tap any input field to auto-select all text for quick value replacement
 
 ### 🍯 **Ingredient Database**
 - 🐝 **Honey Calculations**: 80% fermentable sugar content with temperature-corrected conversions
@@ -27,14 +38,16 @@ MeadCalc is a comprehensive, browser-based **mead brewing calculator** with smar
 - 🔢 **Multiple Additions**: Support for complex recipes with multiple ingredient types
 
 ### 🔧 **Deployment & Management**
+- ☁️ **Cloudflare Pages**: Lightning-fast global CDN deployment with automatic updates
 - 🐳 **LXC Containerization**: Complete Proxmox deployment with Ubuntu 22.04
 - 🌐 **nginx Web Server**: Optimized configuration with security headers and gzip compression
 - 📱 **CLI Management Tools**: Built-in `meadcalc` command for updates, status, logs, and backups
 - 🔄 **Automated Updates**: Safe updates with backup management and rollback capabilities
 
 ### 🎨 **Interface & Usability**  
-- 📱 **Responsive Design**: Optimized for desktop, tablet, and mobile devices
+- 📱 **Mobile-First Responsive Design**: Seamless experience across all devices with optimized mobile portrait layout
 - ⚡ **Real-Time Calculations**: Live updates as you type with input validation
+- 🎯 **Smart Input Fields**: Universal click/tap text selection for effortless data entry
 - 📋 **Reference Materials**: Built-in mead style guidelines and brewing recommendations
 
 This repository contains:
@@ -145,11 +158,13 @@ If you prefer to run MeadCalc without Proxmox:
 
 ## 🔧 Technical Details
 
-- **Frontend**: Vanilla JavaScript, HTML5, CSS3 with responsive design
-- **Backend**: nginx web server with optimized configuration
+- **Frontend**: Vanilla JavaScript, HTML5, CSS3 with mobile-first responsive design
+- **Deployment**: Cloudflare Pages with GitHub integration for automatic deployments
+- **Backend**: nginx web server with optimized configuration (for self-hosting)
 - **Container**: Ubuntu 22.04 LXC with security headers and gzip compression
 - **Update System**: Bash-based with automatic rollback capabilities
 - **Unit System**: Dual imperial/metric with intelligent display formatting
+- **UX Features**: Universal input selection, mobile-optimized touch interactions
 
 ---
 
