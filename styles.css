@@ -752,77 +752,51 @@ input[type="number"]::-webkit-inner-spin-button {
     }
 }
 
-/* Buy Me A Coffee Support Section */
-.support-footer {
-    background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
-    border-top: 2px solid #d4af37;
-    margin-top: 40px;
-    padding: 30px 0;
-    text-align: center;
+/* Subtle Buy Me A Coffee Header Support */
+.header-support {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    z-index: 10;
 }
 
-.support-section {
-    max-width: 600px;
-    margin: 0 auto;
+.coffee-link {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 12px;
+    background: rgba(212, 175, 55, 0.1);
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    border-radius: 20px;
+    color: #d4af37;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(5px);
 }
 
-.support-section p {
-    color: #ffffff;
-    font-size: 16px;
-    margin: 10px 0;
-    line-height: 1.6;
+.coffee-link:hover {
+    background: rgba(212, 175, 55, 0.2);
+    border-color: rgba(212, 175, 55, 0.6);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(212, 175, 55, 0.2);
 }
 
-.coffee-button {
-    display: inline-block;
-    margin: 15px 0;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    border-radius: 8px;
-    overflow: hidden;
+/* Ensure header has relative positioning for absolute positioning of support link */
+header {
+    position: relative;
 }
 
-.coffee-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(212, 175, 55, 0.3);
-}
-
-.coffee-img {
-    height: 50px;
-    width: auto;
-    border-radius: 8px;
-    transition: opacity 0.2s ease;
-}
-
-.coffee-button:hover .coffee-img {
-    opacity: 0.9;
-}
-
-.support-text {
-    margin-top: 10px;
-}
-
-.support-text p {
-    font-size: 14px;
-    color: #cccccc;
-    font-style: italic;
-}
-
-/* Mobile responsive adjustments for Buy Me A Coffee section */
+/* Mobile responsive adjustments for subtle support link */
 @media (max-width: 768px) {
-    .support-footer {
-        padding: 20px 0;
-        margin-top: 30px;
+    .header-support {
+        top: 10px;
+        right: 15px;
     }
     
-    .support-section p {
-        font-size: 14px;
-    }
-    
-    .coffee-img {
-        height: 45px;
-    }
-    
-    .support-text p {
+    .coffee-link {
+        padding: 6px 10px;
         font-size: 12px;
+        border-radius: 15px;
     }
 }
