@@ -856,10 +856,10 @@ function renderUnifiedCalculator(mode) {
     
     if (mode === 'abv-from-ingredients') {
         contentDiv.innerHTML = `
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; min-height: 400px;">
+            <div class="unified-calc-grid">
                 <!-- Input Section -->
-                <div style="background: linear-gradient(135deg, #2d2d2d 0%, #3a3a3a 100%); padding: 25px; border-radius: 8px; border: 1px solid #555;">
-                    <h3 style="color: #d4af37; font-size: 1.4rem; margin-bottom: 20px; border-bottom: 1px solid #d4af37; padding-bottom: 8px;">Recipe Inputs</h3>
+                <div class="unified-inputs-section">
+                    <h3 class="unified-section-header">Recipe Inputs</h3>
                     
                     <div class="input-group">
                         <label for="unified-batch-size" id="unified-abv-batch-label">Batch Size (gallons):</label>
@@ -889,20 +889,20 @@ function renderUnifiedCalculator(mode) {
                 </div>
 
                 <!-- Results Section -->
-                <div style="background: linear-gradient(135deg, #1a3a1a 0%, #2d5a2d 100%); padding: 25px; border-radius: 8px; border: 1px solid #4a7c59;">
-                    <h3 style="color: #d4af37; font-size: 1.4rem; margin-bottom: 20px; border-bottom: 1px solid #d4af37; padding-bottom: 8px;">Calculated Results</h3>
+                <div class="unified-results-section">
+                    <h3 class="unified-section-header">Calculated Results</h3>
                     <div id="unified-abv-results">
-                        <div style="color: #90ee90; margin-bottom: 15px;">Enter ingredients to see calculated ABV and gravity</div>
+                        <div class="unified-placeholder">Enter ingredients to see calculated ABV and gravity</div>
                     </div>
                 </div>
             </div>
         `;
     } else {
         contentDiv.innerHTML = `
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; min-height: 400px;">
+            <div class="unified-calc-grid">
                 <!-- Input Section -->
-                <div style="background: linear-gradient(135deg, #2d2d2d 0%, #3a3a3a 100%); padding: 25px; border-radius: 8px; border: 1px solid #555;">
-                    <h3 style="color: #d4af37; font-size: 1.4rem; margin-bottom: 20px; border-bottom: 1px solid #d4af37; padding-bottom: 8px;">Target Recipe</h3>
+                <div class="unified-inputs-section">
+                    <h3 class="unified-section-header">Target Recipe</h3>
                     
                     <div class="input-group">
                         <label for="unified-target-abv">Target ABV (%):</label>
@@ -930,10 +930,10 @@ function renderUnifiedCalculator(mode) {
                 </div>
 
                 <!-- Results Section -->
-                <div style="background: linear-gradient(135deg, #1a3a1a 0%, #2d5a2d 100%); padding: 25px; border-radius: 8px; border: 1px solid #4a7c59;">
-                    <h3 style="color: #d4af37; font-size: 1.4rem; margin-bottom: 20px; border-bottom: 1px solid #d4af37; padding-bottom: 8px;">Required Ingredients</h3>
+                <div class="unified-results-section">
+                    <h3 class="unified-section-header">Required Ingredients</h3>
                     <div id="unified-target-results">
-                        <div style="color: #90ee90; margin-bottom: 15px;">Enter target ABV and ingredients to see required amounts</div>
+                        <div class="unified-placeholder">Enter target ABV and ingredients to see required amounts</div>
                     </div>
                 </div>
             </div>
@@ -966,6 +966,9 @@ function renderUnifiedCalculator(mode) {
     updateWeightLabels();
     updateVolumeLabels();
     updateWeightInputs();
+    
+    // Apply select-all functionality to all inputs
+    addSelectAllOnClick();
 }
 
 function setupUnifiedEventListeners(mode) {
@@ -1395,6 +1398,9 @@ function renderUnifiedABVIngredient(ingredient) {
     `;
     
     container.appendChild(div);
+    
+    // Apply select-all functionality to new inputs
+    addSelectAllOnClick();
 }
 
 function updateUnifiedABVIngredient(id, property, value) {
@@ -1452,6 +1458,9 @@ function renderUnifiedTargetIngredient(ingredient) {
     `;
     
     container.appendChild(div);
+    
+    // Apply select-all functionality to new inputs
+    addSelectAllOnClick();
 }
 
 function updateUnifiedTargetIngredient(id, property, value) {
@@ -1814,7 +1823,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     
     // Add double-click select all functionality to all input fields
-    addSelectAllOnDoubleClick();
+    addSelectAllOnClick();
     
     // Add event listeners for conversion utility live updates
     addConversionEventListeners();
@@ -1823,51 +1832,40 @@ document.addEventListener('DOMContentLoaded', function() {
     isInitialLoad = false;
 });
 
-// Function to add smooth select-all functionality to all input fields
-function addSelectAllOnDoubleClick() {
+// Function to add select-all functionality to all input fields
+function addSelectAllOnClick() {
     // Get all input elements of type number and text
-    const inputs = document.querySelectorAll('input[type="number"], input[type="text"], select');
+    const inputs = document.querySelectorAll('input[type="number"], input[type="text"]');
     
     inputs.forEach(input => {
-        if (input.tagName === 'SELECT') return; // Skip select elements
+        // Remove existing listeners to avoid duplicates
+        input.removeEventListener('click', selectAllOnClick);
+        input.removeEventListener('focus', selectAllOnFocus);
         
-        // Add double-click event listener for select all
-        input.addEventListener('dblclick', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            this.focus();
-            this.select();
-            // For mobile compatibility
-            this.setSelectionRange(0, this.value.length);
-        });
+        // Add click event to select all
+        input.addEventListener('click', selectAllOnClick);
         
-        // Add click event to select all when field has content
-        input.addEventListener('click', function(e) {
-            // Only select all if the field has content and isn't already focused
-            if (this.value !== '' && document.activeElement !== this) {
-                setTimeout(() => {
-                    this.select();
-                }, 10);
-            }
-        });
-        
-        // Ensure text selection works properly on focus
-        input.addEventListener('focus', function(e) {
-            if (this.value !== '') {
-                setTimeout(() => {
-                    this.select();
-                }, 10);
-            }
-        });
-        
-        // Prevent text selection issues on mouseup
-        input.addEventListener('mouseup', function(e) {
-            if (this.value !== '' && window.getSelection().toString() === '') {
-                e.preventDefault();
-                this.select();
-            }
-        });
+        // Add focus event to select all
+        input.addEventListener('focus', selectAllOnFocus);
     });
+}
+
+// Select all text on click/tap
+function selectAllOnClick(e) {
+    // Small timeout ensures the field is properly focused first
+    setTimeout(() => {
+        this.select();
+        this.setSelectionRange(0, this.value.length); // Mobile compatibility
+    }, 10);
+}
+
+// Select all text on focus (keyboard navigation, tab, etc.)
+function selectAllOnFocus(e) {
+    // Small timeout ensures proper selection
+    setTimeout(() => {
+        this.select();
+        this.setSelectionRange(0, this.value.length); // Mobile compatibility
+    }, 10);
 }
 
 // Function to add event listeners for conversion utility live updates

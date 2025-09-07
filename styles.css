@@ -327,6 +327,61 @@ header p {
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
+/* Unified Calculator Grid Layout */
+.unified-calc-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    min-height: 400px;
+}
+
+/* Unified Calculator Input and Results Sections */
+.unified-inputs-section {
+    background: linear-gradient(135deg, #2d2d2d 0%, #3a3a3a 100%);
+    padding: 25px;
+    border-radius: 8px;
+    border: 1px solid #555;
+}
+
+.unified-results-section {
+    background: linear-gradient(135deg, #1a3a1a 0%, #2d5a2d 100%);
+    padding: 25px;
+    border-radius: 8px;
+    border: 1px solid #4a7c59;
+}
+
+.unified-section-header {
+    color: #d4af37;
+    font-size: 1.4rem;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #d4af37;
+    padding-bottom: 8px;
+}
+
+.unified-placeholder {
+    color: #90ee90;
+    margin-bottom: 15px;
+}
+
+/* Mobile responsive layout for unified calculator */
+@media (max-width: 768px) {
+    .unified-calc-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+        min-height: auto;
+    }
+    
+    .unified-inputs-section,
+    .unified-results-section {
+        padding: 20px;
+    }
+    
+    .unified-section-header {
+        font-size: 1.2rem;
+        margin-bottom: 15px;
+    }
+}
+
 .calc-section:hover {
     transform: translateY(-3px);
     box-shadow: 0 10px 25px rgba(212, 175, 55, 0.2);

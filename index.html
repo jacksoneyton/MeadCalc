@@ -77,10 +77,10 @@
 
             <!-- Calculator Content -->
             <div id="unified-calculator-content">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; min-height: 400px;">
+                <div class="unified-calc-grid">
                     <!-- Input Section -->
-                    <div style="background: linear-gradient(135deg, #2d2d2d 0%, #3a3a3a 100%); padding: 25px; border-radius: 8px; border: 1px solid #555;">
-                        <h3 style="color: #d4af37; font-size: 1.4rem; margin-bottom: 20px; border-bottom: 1px solid #d4af37; padding-bottom: 8px;">Recipe Inputs</h3>
+                    <div class="unified-inputs-section">
+                        <h3 class="unified-section-header">Recipe Inputs</h3>
                         
                         <div class="input-group">
                             <label for="unified-batch-size" id="unified-abv-batch-label">Batch Size (gallons):</label>
@@ -110,10 +110,10 @@
                     </div>
 
                     <!-- Results Section -->
-                    <div style="background: linear-gradient(135deg, #1a3a1a 0%, #2d5a2d 100%); padding: 25px; border-radius: 8px; border: 1px solid #4a7c59;">
-                        <h3 style="color: #d4af37; font-size: 1.4rem; margin-bottom: 20px; border-bottom: 1px solid #d4af37; padding-bottom: 8px;">Calculated Results</h3>
+                    <div class="unified-results-section">
+                        <h3 class="unified-section-header">Calculated Results</h3>
                         <div id="unified-abv-results">
-                            <div style="color: #90ee90; margin-bottom: 15px;">Enter ingredients to see calculated ABV and gravity</div>
+                            <div class="unified-placeholder">Enter ingredients to see calculated ABV and gravity</div>
                         </div>
                     </div>
                 </div>
@@ -242,7 +242,7 @@
     <script>
         // Ensure select-all functionality works
         setTimeout(() => {
-            addSelectAllOnDoubleClick();
+            addSelectAllOnClick();
         }, 500);
     </script>
 </body>
