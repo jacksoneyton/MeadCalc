@@ -1,0 +1,35 @@
+# Cloudflare Pages Configuration
+# https://developers.cloudflare.com/pages/platform/build-configuration/
+
+name = "meadcalc"
+compatibility_date = "2024-09-07"
+
+[build]
+  command = ""
+  publish = "."
+
+# Environment variables (if needed)
+[vars]
+  ENVIRONMENT = "production"
+
+# Custom domains (add your domains here)
+# [env.production]
+# routes = [
+#   "meadcalc.your-domain.com/*",
+#   "www.meadcalc.your-domain.com/*"
+# ]
+
+# Build cache configuration
+[build.processing]
+  css = true
+  js = true
+  html = true
+  
+[build.processing.css]
+  minify = true
+  
+[build.processing.js]
+  minify = true
+  
+[build.processing.html]
+  minify = true

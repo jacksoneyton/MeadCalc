@@ -1,0 +1,63 @@
+name: Deploy to Cloudflare Pages
+
+on:
+  push:
+    branches:
+      - master
+      - main
+  pull_request:
+    branches:
+      - master
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy MeadCalc to Cloudflare Pages
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          
+      - name: Validate HTML structure
+        run: |
+          echo "Validating core files exist..."
+          test -f index.html || { echo "Missing index.html"; exit 1; }
+          test -f calculator.js || { echo "Missing calculator.js"; exit 1; }
+          test -f styles.css || { echo "Missing styles.css"; exit 1; }
+          echo "✅ Core files validated"
+          
+      - name: Check JavaScript syntax
+        run: |
+          echo "Checking JavaScript syntax..."
+          node -c calculator.js
+          echo "✅ JavaScript syntax valid"
+          
+      - name: Generate build info
+        run: |
+          echo "Build: $(date -u)" > build-info.txt
+          echo "Commit: ${{ github.sha }}" >> build-info.txt
+          echo "Branch: ${{ github.ref_name }}" >> build-info.txt
+          
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: meadcalc
+          directory: .
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Purge Cloudflare Cache
+        if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
+        run: |
+          curl -X POST "https://api.cloudflare.com/client/v4/zones/${{ secrets.CLOUDFLARE_ZONE_ID }}/purge_cache" \
+            -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            --data '{"purge_everything":true}'
+          echo "✅ Cloudflare cache purged"

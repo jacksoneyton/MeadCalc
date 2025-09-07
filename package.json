@@ -1,0 +1,42 @@
+{
+  "name": "meadcalc",
+  "version": "2.0.0",
+  "description": "Professional mead brewing calculator with ABV, specific gravity, and ingredient calculations",
+  "main": "index.html",
+  "scripts": {
+    "build": "node build.js",
+    "validate": "node -c calculator.js",
+    "test": "npm run validate && npm run build",
+    "dev": "python -m http.server 8000 || python3 -m http.server 8000",
+    "deploy": "npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jacksoneyton/MeadCalc.git"
+  },
+  "keywords": [
+    "mead",
+    "brewing",
+    "calculator",
+    "abv",
+    "specific-gravity",
+    "fermentation",
+    "homebrew"
+  ],
+  "author": "Jackson Eyton",
+  "license": "MIT",
+  "homepage": "https://meadcalc.pages.dev",
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "devDependencies": {},
+  "files": [
+    "index.html",
+    "calculator.js",
+    "styles.css",
+    "MeadCalc_logo.png",
+    "_headers",
+    "_redirects",
+    "wrangler.toml"
+  ]
+}

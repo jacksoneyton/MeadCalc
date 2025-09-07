@@ -1,0 +1,17 @@
+# Cloudflare Pages Redirects Configuration
+# https://developers.cloudflare.com/pages/platform/redirects/
+
+# Redirect legacy paths (if any)
+/calculator.html /index.html 301
+/calc.html /index.html 301
+/mead.html /index.html 301
+
+# Ensure trailing slash consistency
+/index /index.html 301
+
+# Health check endpoint
+/health /index.html 200
+/status /index.html 200
+
+# API-like endpoints for monitoring
+/api/health /index.html 200
