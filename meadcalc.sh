@@ -248,13 +248,11 @@ WEB_ROOT="/var/www/meadcalc"
 BACKUP_DIR="/var/www/meadcalc-backups"
 TEMP_DIR="/tmp/meadcalc-update"
 
-# Get list of web files from GitHub repository
-get_web_files() {
+# Get list of web files from GitHub repository (silent version)
+get_web_files_silent() {
     # Define web file extensions we want to include
     local web_extensions=("html" "css" "js" "png" "jpg" "jpeg" "gif" "svg" "ico" "woff" "woff2" "ttf" "json")
     local files=()
-    
-    log_info "Discovering web files from repository..." >&2
     
     # Get repository contents from GitHub API
     local repo_contents
@@ -279,17 +277,22 @@ get_web_files() {
     
     # Fallback to hardcoded list if API fails
     if [[ ${#files[@]} -eq 0 ]]; then
-        log_warning "Could not fetch file list from GitHub API, using fallback list" >&2
         files=("index.html" "styles.css" "calculator.js" "MeadCalc_logo.png")
-    else
-        log_success "Discovered ${#files[@]} web files from repository" >&2
     fi
     
     printf '%s\n' "${files[@]}"
 }
 
-# Get dynamic file list
-mapfile -t FILES < <(get_web_files)
+# Get dynamic file list with proper logging
+log_info "Discovering web files from repository..."
+mapfile -t FILES < <(get_web_files_silent)
+
+# Log the results
+if [[ ${#FILES[@]} -gt 4 ]]; then
+    log_success "Discovered ${#FILES[@]} web files from repository"
+else
+    log_warning "Using fallback file list"
+fi
 
 echo "🔄 MeadCalc Update Script"
 echo "========================"
