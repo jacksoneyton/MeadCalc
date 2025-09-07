@@ -752,51 +752,79 @@ input[type="number"]::-webkit-inner-spin-button {
     }
 }
 
-/* Subtle Buy Me A Coffee Header Support */
-.header-support {
-    position: absolute;
-    top: 15px;
-    right: 20px;
-    z-index: 10;
+/* Buy Me A Coffee Support Section - Top Position */
+.support-section-top {
+    background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
+    border: 1px solid #d4af37;
+    border-radius: 12px;
+    margin: 20px 0 30px 0;
+    padding: 25px;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(212, 175, 55, 0.1);
 }
 
-.coffee-link {
-    display: inline-flex;
-    align-items: center;
-    padding: 10px 16px;
-    background: rgba(212, 175, 55, 0.1);
-    border: 1px solid rgba(212, 175, 55, 0.3);
-    border-radius: 25px;
-    color: #d4af37;
-    text-decoration: none;
-    font-size: 15px;
-    font-weight: 500;
-    transition: all 0.2s ease;
-    backdrop-filter: blur(5px);
+.support-content {
+    max-width: 600px;
+    margin: 0 auto;
 }
 
-.coffee-link:hover {
-    background: rgba(212, 175, 55, 0.2);
-    border-color: rgba(212, 175, 55, 0.6);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(212, 175, 55, 0.2);
+.support-content p {
+    color: #ffffff;
+    font-size: 16px;
+    margin: 10px 0;
+    line-height: 1.6;
 }
 
-/* Ensure header has relative positioning for absolute positioning of support link */
-header {
-    position: relative;
+.coffee-button {
+    display: inline-block;
+    margin: 15px 0;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border-radius: 8px;
+    overflow: hidden;
 }
 
-/* Mobile responsive adjustments for subtle support link */
+.coffee-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(212, 175, 55, 0.3);
+}
+
+.coffee-img {
+    height: 50px;
+    width: auto;
+    border-radius: 8px;
+    transition: opacity 0.2s ease;
+}
+
+.coffee-button:hover .coffee-img {
+    opacity: 0.9;
+}
+
+.support-text {
+    margin-top: 10px;
+}
+
+.support-text p {
+    font-size: 14px;
+    color: #cccccc;
+    font-style: italic;
+}
+
+/* Mobile responsive adjustments for Buy Me A Coffee section */
 @media (max-width: 768px) {
-    .header-support {
-        top: 10px;
-        right: 15px;
+    .support-section-top {
+        padding: 20px 15px;
+        margin: 15px 0 25px 0;
     }
     
-    .coffee-link {
-        padding: 8px 12px;
+    .support-content p {
         font-size: 14px;
-        border-radius: 20px;
+    }
+    
+    .coffee-img {
+        height: 45px;
+    }
+    
+    .support-text p {
+        font-size: 12px;
     }
 }
